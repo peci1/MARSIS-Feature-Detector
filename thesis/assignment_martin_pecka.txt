@@ -1,0 +1,38 @@
+Thesis title: Detection of 2D features in MARSIS ionogram pictures
+Název práce: Hledání 2D jevù v ionografických snímcích pøístroje MARSIS
+
+Assignment's language: English
+
+Preliminary scope of work
+=========================
+
+The thesis will focus on methods of offline extraction of features from ionograms (recorded echoes from the Mars' ionosphere) captured by the MARSIS instrument onboard the Mars Express spacecraft. The extraction will include noise supression and algorithmic recognition of parametrically defined 2D features. This task differs from classical offline pattern recognition tasks in the fact that even the patterns to find are not precisely defined - instead, they are defined as parametrized curves and shapes. The student will try to adjust common pattern recognition techniques for this slightly different task or develop some problem-specific approaches. Then these methods will be applied to real data, and the results will be compared to manual (human-aided) feature extraction. Finally, the student will provide a summary of his findings and experiences.
+
+Guidelines
+==========
+
+1) Inspect the data format and properties of the MARSIS instrument
+2) Learn about pattern recognition techniques
+3) Select appropriate pattern recognition methods (or develop some problem specific ones)
+4) Apply the methods to real data
+5) Compare the methods one to each other and also against the manually-extracted data
+6) Discuss the obtained results
+
+References
+==========
+
+[1] C. Russel et al.: The Mars plasma environment,
+Springer, Dordrecht, Netherlands, 2007, [iii], 501 p. ISBN 03-877-0941-X.
+
+[2] G. Picardi et al.: MARSIS: Mars Advanced Radar for Subsurface and Ionosphere Sounding,
+Mars Express: A European Mission to the Red Planet, ed. by A. Wilson, ESA Report SP-1240, European Space Agency Publications Division, ESTEC, Noordwijk, The Netherlands, Paris, France, pp. 51-69, Aug. 2004. 
+Accessible at http://www-pw.physics.uiowa.edu/~dag/publications/2004_MARSIS_MarsAdvancedRadarForSubsurfaceAndIonosphereSounding_ESA.pdf
+
+[3] D. A. Gurnett: Radar Soundings of the Ionosphere of Mars,
+Published online 30 November 2005 at Science vol. 310, nr. 5756, p. 1929-1933; DOI 10.1126/science.1121868
+
+[4] Richard O. Duda, Peter E. Hart, David G. Stork: Pattern Classification,
+Second Edition, A Wiley-Interscience Publication, 2000, ISBN: 978-0-471-05669-0 
+
+[5] Sergios Theodoridis, Konstantinos Koutroumbas: Pattern Recognition,
+Fourth Edition, Elsevier Academic Press, 2008, ISBN: 978-1-59749-272-0

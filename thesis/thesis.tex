@@ -1,0 +1,274 @@
+%%% Hlavní soubor. Zde se definují základní parametry a odkazuje se na ostatní èásti. %%%
+
+%% Verze pro jednostranný tisk:
+% Okraje: levý 40mm, pravý 25mm, horní a dolní 25mm
+% (ale pozor, LaTeX si sám pøidává 1in)
+\documentclass[12pt,a4paper]{report}
+\setlength\textwidth{145mm}
+\setlength\textheight{247mm}
+\setlength\oddsidemargin{15mm}
+\setlength\evensidemargin{15mm}
+\setlength\topmargin{0mm}
+\setlength\headsep{0mm}
+\setlength\headheight{0mm}
+% \openright zaøídí, aby následující text zaèínal na pravé stranì knihy
+\let\openright=\clearpage
+
+%% Pokud používáte csLaTeX (doporuèeno):
+%\usepackage{czech}
+%% Pokud nikoliv:
+\usepackage[czech,english]{babel}
+\usepackage[T1]{fontenc}
+
+%% Použité kódování znakù: obvykle latin2, cp1250 nebo utf8:
+\usepackage[cp1250]{inputenc}
+
+%% Ostatní balíèky
+\usepackage{url}
+\usepackage{footnote}
+\makesavenoteenv{tabular}
+
+\usepackage{longtable}
+
+\usepackage{listings}
+
+\lstset{%
+  showstringspaces=false,
+  basicstyle=\ttfamily,
+  breaklines=true,
+  columns=fullflexible,
+  numbers=left, numberstyle=\tiny, stepnumber=2, numbersep=5pt,
+  keywordstyle=\bfseries
+}
+
+\usepackage{graphicx}
+\usepackage{amsthm}
+
+%% Balíèek hyperref, kterým jdou vyrábìt klikací odkazy v PDF,
+%% ale hlavnì ho používáme k uložení metadat do PDF (vèetnì obsahu).
+%% POZOR, nezapomeòte vyplnit jméno práce a autora.
+\usepackage[unicode]{hyperref}   % Musí být za všemi ostatními balíèky
+\hypersetup{pdftitle=Detection of 2D features in MARSIS ionogram pictures}
+\hypersetup{pdfauthor=Martin Pecka}
+
+%%% Drobné úpravy stylu
+
+% Tato makra pøesvìdèují mírnì ošklivým trikem LaTeX, aby hlavièky kapitol
+% sázel pøíèetnìji a nevynechával nad nimi spoustu místa. Smìle ignorujte.
+\makeatletter
+\def\@makechapterhead#1{
+  {\parindent \z@ \raggedright \normalfont
+   \Huge\bfseries \thechapter. #1
+   \par\nobreak
+   \vskip 20\p@
+}}
+\def\@makeschapterhead#1{
+  {\parindent \z@ \raggedright \normalfont
+   \Huge\bfseries #1
+   \par\nobreak
+   \vskip 20\p@
+}}
+\makeatother
+
+% Toto makro definuje kapitolu, která není oèíslovaná, ale je uvedena v obsahu.
+\def\chapwithtoc#1{
+\chapter*{#1}
+\addcontentsline{toc}{chapter}{#1}
+}
+
+\newtheorem*{define}{Definition}	% Definice neèíslujeme, proto "*"
+
+\begin{document}
+
+% Trochu volnìjší nastavení dìlení slov, než je default.
+\lefthyphenmin=2
+\righthyphenmin=2
+
+%%% Titulní strana práce
+
+\pagestyle{empty}
+\begin{center}
+
+\large
+
+Charles University in Prague
+
+\medskip
+
+Faculty of Mathematics and Physics
+
+\vfill
+
+{\bf\Large MASTER THESIS}
+
+\vfill
+
+\centerline{\mbox{\includegraphics[width=60mm]{img/logo.pdf}}}
+
+\vfill
+\vspace{5mm}
+
+{\LARGE Martin Pecka}
+
+\vspace{15mm}
+
+% Název práce pøesnì podle zadání
+{\LARGE\bfseries Detection of 2D features in MARSIS ionogram pictures}
+
+\vfill
+
+% Název katedry nebo ústavu, kde byla práce oficiálnì zadána
+% (dle Organizaèní struktury MFF UK)
+Department~of~Software~Engineering
+
+\vfill
+
+\begin{tabular}{rl}
+
+Supervisor of the master thesis: & RNDr.~Jana~Štanclová,~Ph.D. \\
+\noalign{\vspace{2mm}}
+Study programme: & Informatics \\
+\noalign{\vspace{2mm}}
+Specialization: & Theoretical Informatics \\
+\end{tabular}
+
+\vfill
+
+% Zde doplòte rok
+Prague 2013
+
+\end{center}
+
+\newpage
+
+%%% Následuje vevázaný list -- kopie podepsaného "Zadání diplomové práce".
+%%% Toto zadání NENÍ souèástí elektronické verze práce, nescanovat.
+
+%%% Na tomto místì mohou být napsána pøípadná podìkování (vedoucímu práce,
+%%% konzultantovi, tomu, kdo zapùjèil software, literaturu apod.)
+
+\openright
+
+\noindent
+Dedication.
+%TODO
+
+\newpage
+
+%%% Strana s èestným prohlášením k diplomové práci
+
+\vglue 0pt plus 1fill
+
+\noindent
+I declare that I carried out this master thesis independently, and only with the cited
+sources, literature and other professional sources.
+
+\medskip\noindent
+I understand that my work relates to the rights and obligations under the Act No.
+121/2000 Coll., the Copyright Act, as amended, in particular the fact that the Charles
+University in Prague has the right to conclude a license agreement on the use of this
+work as a school work pursuant to Section 60 paragraph 1 of the Copyright Act.
+
+\vspace{10mm}
+
+\hbox{\hbox to 0.5\hsize{%
+In Prague date ............ %TODO rucne
+\hss}\hbox to 0.5\hsize{%
+%TODO podpis
+\hss}}
+
+\vspace{20mm}
+\newpage
+
+%%% Povinná informaèní strana diplomové práce
+
+\vbox to 0.5\vsize{
+\setlength\parindent{0mm}
+\setlength\parskip{5mm}
+
+Název práce:
+Hledání 2D jevù v ionografických snímcích pøístroje MARSIS
+% pøesnì dle zadání
+
+Autor:
+Bc.~Martin~Pecka
+
+Katedra:  % Pøípadnì Ústav:
+Katedra~softwarového~inženýrství
+% dle Organizaèní struktury MFF UK
+
+Vedoucí diplomové práce:
+RNDr.~Jana~Štanclová,~Ph.D.,~Katedra~softwarového~inženýrství
+% dle Organizaèní struktury MFF UK, pøípadnì plný název pracovištì mimo MFF UK
+
+Abstrakt:
+Práce se zabývá technikami hledání význaèných prvkù v ionogramech zachycených pøístrojem MARSIS umístìným na kosmické sondì Mars Express. Ionogramy jsou reprezentovány jako dvourozmìrné obrázky s hodnotou kódovanou pomocí barvy. Vyvíjené techniky se snaží detekovat v takových snímcích rùzné zajímavé køivky (definované sadou parametrù), pøípadnì mìøit další parametry nalezených objektù (perioda opakování pøímek). %TODO nejake vysledky...
+
+Klíèová slova:
+rozpoznávání~vzorù, detekce, parametrické~køivky, Mars~Express
+
+\vss}\nobreak\vbox to 0.49\vsize{
+\setlength\parindent{0mm}
+\setlength\parskip{5mm}
+
+Title:
+Detection of 2D features in MARSIS ionogram pictures
+% pøesný pøeklad názvu práce v angliètinì
+
+Author:
+Bc.~Martin~Pecka
+
+Department:
+Department~of~Software~Engineering
+% dle Organizaèní struktury MFF UK v angliètinì
+
+Supervisor:
+RNDr.~Jana~Štanclová,~Ph.D.,~Department~of~Software~Engineering
+% dle Organizaèní struktury MFF UK, pøípadnì plný název pracovištì
+% mimo MFF UK v angliètinì
+
+Abstract:
+% abstrakt v rozsahu 80-200 slov v angliètinì; nejedná se však o pøeklad
+% zadání diplomové práce
+The work focuses on techniques for finding significant features in ionograms captured by the MARSIS instrument onboard the Mars Express spacecraft. Ionograms are 2D images with values represented in color. The developed techniques try to detect interesting curves (paramterically defined) in such images and measure some more parameters of the found objects (like the repetition period of lines). %TODO nejake vysledky...
+
+Keywords:
+pattern~recognition, detection, parametrical~curves, Mars~Express
+% 3 až 5 klíèových slov v angliètinì
+
+\vss}
+
+\newpage
+
+%%% Strana s automaticky generovaným obsahem diplomové práce. U matematických
+%%% prací je pøípustné, aby seznam tabulek a zkratek, existují-li, byl umístìn
+%%% na zaèátku práce, místo na jejím konci.
+
+\openright
+\pagestyle{plain}
+\setcounter{page}{1}
+\tableofcontents
+
+%%% Jednotlivé kapitoly práce jsou pro pøehlednost uloženy v samostatných souborech
+\include{preface}
+%\include{chap1}
+%\include{chap2}
+
+\include{epilog}
+
+%%% Seznam použité literatury
+\include{bibliography}
+
+%%% Tabulky v diplomové práci, existují-li.
+\chapwithtoc{List of Tables}
+
+%%% Použité zkratky v diplomové práci, existují-li, vèetnì jejich vysvìtlení.
+\chapwithtoc{List of Abbreviations}
+
+%%% Pøílohy k diplomové práci, existují-li (rùzné dodatky jako výpisy programù,
+%%% diagramy apod.). Každá pøíloha musí být alespoò jednou odkazována z vlastního
+%%% textu práce. Pøílohy se èíslují.
+\chapwithtoc{Attachments}
+
+\openright
+\end{document}
