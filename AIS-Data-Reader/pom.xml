@@ -5,4 +5,11 @@
   <version>0.0.1-SNAPSHOT</version>
   <name>AIS format reader</name>
   <description>Reader for data in AIS format</description>
+  <dependencies>
+  	<dependency>
+  		<groupId>joda-time</groupId>
+  		<artifactId>joda-time</artifactId>
+  		<version>2.1</version>
+  	</dependency>
+  </dependencies>
 </project>
