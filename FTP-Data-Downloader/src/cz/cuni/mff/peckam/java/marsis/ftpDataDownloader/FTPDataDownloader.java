@@ -19,16 +19,28 @@ import cz.dhl.io.CoFile;
 public class FTPDataDownloader
 {
 
+    /**
+     * The FTP directory in which image files are stored.
+     */
     private static final String  IMAGE_DIR       = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-V1.0/BROWSE/ACTIVE_IONOSPHERIC_SOUNDER/";
+    /**
+     * The FTP directory in which data are stored.
+     */
     private static final String  DATA_DIR        = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-V1.0/DATA/ACTIVE_IONOSPHERIC_SOUNDER/";
 
+    /**
+     * The number of already downloaded files.
+     */
     private static volatile int  downloadedFiles = 0;
+    /**
+     * The number of bytes already downloaded.
+     */
     private static volatile long downloadedBytes = 0;
 
     /**
+     * Run the downloader.
      * 
-     * 
-     * @param args
+     * @param args Two integer numbers are required that specify the starting and ending index of the files to download.
      */
     public static void main(String[] args)
     {
@@ -74,6 +86,11 @@ public class FTPDataDownloader
         });
     }
 
+    /**
+     * A callback to call when a file download has been completed.
+     * 
+     * @param size Size of the downloaded file.
+     */
     public static synchronized void anotherFileDownloaded(long size)
     {
         downloadedBytes += size;

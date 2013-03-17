@@ -41,8 +41,8 @@ public class FtpDownloadThread extends FtpThread
 
     /**
      * @param remoteFile The remoteFile to upload
-     * @param dir
-     * @param localFile The remoteFile to download to.
+     * @param dir The directory to download from.
+     * @param localFile The file to download to.
      */
     public FtpDownloadThread(String remoteFile, String dir, String localFile)
     {

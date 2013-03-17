@@ -43,7 +43,7 @@ public abstract class FtpThread extends Thread
     /**
      * Listeners to the change of percentage
      */
-    List<ChangeListener> percentageListeners = new LinkedList<ChangeListener>();
+    List<ChangeListener> percentageListeners = new LinkedList<>();
 
     /**
      * The percentage done
