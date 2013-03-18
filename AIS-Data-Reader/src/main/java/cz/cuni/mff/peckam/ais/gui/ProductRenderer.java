@@ -42,7 +42,7 @@ import cz.cuni.mff.peckam.ais.Product;
 /**
  * Renderer for data products.
  * <p>
- * Provides property "product".
+ * Provides properties "product", "colorScale".
  * 
  * @author Martin Pecka
  */
@@ -53,6 +53,9 @@ public class ProductRenderer extends JPanel
 
     /** The product to render. */
     private Product<?>        product          = null;
+
+    /** Color scale. */
+    private ColorScale<?>     colorScale       = null;
 
     /** The image to draw. */
     private BufferedImage     image            = null;
@@ -87,44 +90,35 @@ public class ProductRenderer extends JPanel
     }
 
     /**
-     * @param product The product to render.
+     * @return The color scale.
      */
-    public void setProduct(Product<?> product)
+    public ColorScale<?> getColorScale()
+    {
+        return colorScale;
+    }
+
+    /**
+     * @param <N> The numeric type of the product.
+     * @param product The product to render.
+     * @param colorScale The color scale used to render the product.
+     */
+    public <N extends Number> void setProductAndColorScale(Product<N> product, ColorScale<N> colorScale)
     {
         final Product<?> oldProduct = this.product;
         this.product = product;
         firePropertyChange("product", oldProduct, product);
 
-        double min = Double.MAX_VALUE;
-        double max = -Double.MAX_VALUE;
-        final Number[][] data = product.getData();
-        for (Number[] row : data) {
-            for (Number pixel : row) {
-                if (pixel.doubleValue() > max)
-                    max = pixel.doubleValue();
-                if (pixel.doubleValue() < min)
-                    min = pixel.doubleValue();
-            }
-        }
-
-        min = Math.log10(min);
-        max = Math.log10(max);
-        final float range = (float) (max - min);
-        final float threshold = (float) (min + range / 100f);
+        final ColorScale<?> oldScale = this.colorScale;
+        this.colorScale = colorScale;
+        firePropertyChange("colorScale", oldScale, colorScale);
 
         image = new BufferedImage(product.getWidth(), product.getHeight(), BufferedImage.TYPE_INT_RGB);
 
+        final N[][] data = product.getData();
         for (int x = 0; x < image.getWidth(); x++) {
             for (int y = 0; y < image.getHeight(); y++) {
-                final float val = (float) Math.log10(data[x][y].floatValue());
-                int color;
-                if (val > threshold) {
-                    final float value = (float) ((val - min) / (max - min));
-                    color = Color.HSBtoRGB((1f - value) * 265f / 360f, 1f, 1f);
-                } else {
-                    color = Color.black.getRGB();
-                }
-                image.setRGB(x, y, color);
+                final Color color = colorScale.getColor(data[x][y]);
+                image.setRGB(x, y, color.getRGB());
             }
         }
 

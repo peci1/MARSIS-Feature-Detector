@@ -173,12 +173,15 @@ public class AISFrame
         positionInSeriesComboBox.setEnabled(false);
         positionInSeriesComboBox.setModel(new DefaultComboBoxModel<>(new Integer[] {}));
         frmAisDataVisualizer.getContentPane().add(positionInSeriesComboBox, "6, 2, right, default");
+
+        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-17f, 10E-9f);
         positionInSeriesComboBox.addActionListener(new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                renderer.setProduct(productSets[(int) positionInSeriesComboBox.getSelectedItem()]);
+                renderer.setProductAndColorScale(productSets[(int) positionInSeriesComboBox.getSelectedItem()],
+                        colorScale);
                 updateSetMetadataLabel();
             }
         });
