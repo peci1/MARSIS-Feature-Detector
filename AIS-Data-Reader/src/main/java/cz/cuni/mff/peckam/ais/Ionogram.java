@@ -42,7 +42,7 @@ import org.joda.time.DateTime;
  * 
  * @author Martin Pecka
  */
-public class AISProductSet implements Product<Float>
+public class Ionogram implements Product<Float>
 {
     /** The data columns. */
     private final AISProduct[] columns;
@@ -67,7 +67,7 @@ public class AISProductSet implements Product<Float>
      * @param orbitNumber The orbit number.
      * @param positionInSeries Position of this data set in the series read from a single AIS data file.
      */
-    public AISProductSet(AISProduct[] columns, int orbitNumber, int positionInSeries)
+    public Ionogram(AISProduct[] columns, int orbitNumber, int positionInSeries)
     {
         this.columns = columns;
         this.orbitNumber = orbitNumber;
@@ -135,7 +135,7 @@ public class AISProductSet implements Product<Float>
     @Override
     public String toString()
     {
-        return "AISProductSet [startTime=" + columns[0].getSpaceCraftClock() + ", orbitNumber=" + orbitNumber
+        return "Ionogram [startTime=" + columns[0].getSpaceCraftClock() + ", orbitNumber=" + orbitNumber
                 + ", positionInSeries=" + positionInSeries + "]";
     }
 

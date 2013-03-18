@@ -54,7 +54,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import cz.cuni.mff.peckam.ais.AISLBLProductReader;
-import cz.cuni.mff.peckam.ais.AISProductSet;
+import cz.cuni.mff.peckam.ais.Ionogram;
 
 /**
  * 
@@ -74,7 +74,7 @@ public class AISFrame
     private JComboBox<Integer> positionInSeriesComboBox;
 
     /** The product sets to display. */
-    private AISProductSet[]    productSets = null;
+    private Ionogram[]    ionograms = null;
 
     /** Configuration. */
     private final Properties   props       = new Properties();
@@ -155,8 +155,8 @@ public class AISFrame
             {
                 try {
                     final String path = lblFileInput.getPath();
-                    productSets = new AISLBLProductReader().readFile(new File(path));
-                    positionInSeriesComboBox.setModel(new NumericRangeComboBoxModel(0, productSets.length - 1));
+                    ionograms = new AISLBLProductReader().readFile(new File(path));
+                    positionInSeriesComboBox.setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
                     positionInSeriesComboBox.setEnabled(true);
                     positionInSeriesComboBox.setSelectedIndex(0);
                     props.setProperty("defaultFile", path);
@@ -180,7 +180,7 @@ public class AISFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                renderer.setProductAndColorScale(productSets[(int) positionInSeriesComboBox.getSelectedItem()],
+                renderer.setProductAndColorScale(ionograms[(int) positionInSeriesComboBox.getSelectedItem()],
                         colorScale);
                 updateSetMetadataLabel();
             }

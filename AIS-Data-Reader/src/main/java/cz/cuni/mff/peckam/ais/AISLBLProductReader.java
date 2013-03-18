@@ -44,18 +44,18 @@ import java.util.Map;
  */
 public class AISLBLProductReader
 {
-    /** Number of columns each set contains. */
+    /** Number of columns each ionogram contains. */
     private static final int NUM_COLUMNS = 160;
 
     /**
-     * Read {@link AISProductSet}s from the given file.
+     * Read {@link Ionogram}s from the given file.
      * 
      * @param lblFile The file to read from.
-     * @return The sets from the given file.
+     * @return The ionograms from the given file.
      * 
      * @throws IOException On file read error.
      */
-    public AISProductSet[] readFile(File lblFile) throws IOException
+    public Ionogram[] readFile(File lblFile) throws IOException
     {
         final Map<String, String> entries = new HashMap<>();
 
@@ -96,7 +96,7 @@ public class AISLBLProductReader
         final String ais_table = entries.get("^AIS_TABLE");
         final int orbit_number = Integer.parseInt(entries.get("ORBIT_NUMBER"));
 
-        final AISProductSet[] result = new AISProductSet[file_records / NUM_COLUMNS];
+        final Ionogram[] result = new Ionogram[file_records / NUM_COLUMNS];
         final AISProductReader aisReader = new AISProductReader();
         final AISProduct[] products = aisReader.readFile(new File(lblFile.getParent(), ais_table));
 
@@ -108,7 +108,7 @@ public class AISLBLProductReader
             for (int j = 0; j < NUM_COLUMNS; j++) {
                 columns[j] = products[i * NUM_COLUMNS + j];
             }
-            result[i] = new AISProductSet(columns, orbit_number, i);
+            result[i] = new Ionogram(columns, orbit_number, i);
         }
 
         return result;
@@ -126,9 +126,9 @@ public class AISLBLProductReader
 
         final AISLBLProductReader reader = new AISLBLProductReader();
         try {
-            final AISProductSet[] result = reader.readFile(new File(args[0]));
-            System.out.println(result.length + " records read from the file: ");
-            for (AISProductSet set : result)
+            final Ionogram[] result = reader.readFile(new File(args[0]));
+            System.out.println(result.length + " ionograms read from the file: ");
+            for (Ionogram set : result)
                 System.out.println(set);
         } catch (IOException e) {
             e.printStackTrace();
