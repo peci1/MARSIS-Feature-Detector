@@ -110,9 +110,9 @@ public class AISProductReader
                 stream.readInt();
 
                 final float frequency = stream.readFloat();
-                final Float[] spectral_density = new Float[NUM_DENSITY_ITEMS];
-                for (int j = 0; j < spectral_density.length; j++) {
-                    spectral_density[j] = stream.readFloat();
+                final Float[][] spectral_density = new Float[1][NUM_DENSITY_ITEMS];
+                for (int j = 0; j < NUM_DENSITY_ITEMS; j++) {
+                    spectral_density[0][j] = stream.readFloat();
                 }
 
                 result[i] = new AISProduct(spacecraft_clock, process_id, instrument_mode, instrument_mode,

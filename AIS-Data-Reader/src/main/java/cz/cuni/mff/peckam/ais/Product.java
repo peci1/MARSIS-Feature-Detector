@@ -45,5 +45,15 @@ public interface Product<DataType extends Number>
      * 
      * @return The product's data.
      */
-    DataType[] getData();
+    DataType[][] getData();
+
+    /**
+     * @return Width of a row of the product's data.
+     */
+    int getWidth();
+
+    /**
+     * @return Height of a column of the product's data.
+     */
+    int getHeight();
 }

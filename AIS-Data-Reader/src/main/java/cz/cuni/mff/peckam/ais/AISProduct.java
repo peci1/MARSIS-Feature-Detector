@@ -60,7 +60,7 @@ public class AISProduct implements Product<Float>
     /**  */
     private float    frequency;
     /**  */
-    private Float[]  spectralDensity;
+    private Float[][] spectralDensity;
 
     /**
      * @param spaceCraftClock Capture time.
@@ -77,7 +77,7 @@ public class AISProduct implements Product<Float>
      */
     AISProduct(DateTime spaceCraftClock, byte processId, byte instrumentDataType, byte instrumentSelectionMode,
             byte transmitPowerLevel, byte frequencyTableNumber, int frequencyNumber, byte bandNumber,
-            byte receiverAttenuation, float frequency, Float[] spectralDensity)
+            byte receiverAttenuation, float frequency, Float[][] spectralDensity)
     {
         this.spaceCraftClock = spaceCraftClock;
         this.processId = processId;
@@ -316,13 +316,13 @@ public class AISProduct implements Product<Float>
      * 
      * @return The spectral density array (80 elements) in "VOLT**2/M**2/HZ.
      */
-    public Float[] getSpectralDensity()
+    public Float[][] getSpectralDensity()
     {
         return spectralDensity;
     }
 
     @Override
-    public Float[] getData()
+    public Float[][] getData()
     {
         return getSpectralDensity();
     }
@@ -343,11 +343,23 @@ public class AISProduct implements Product<Float>
         builder.append("\tInstrument selection mode: ").append(getInstrumentSelectionMode()).append("\n");
 
         builder.append("\tData: ");
-        for (float density : spectralDensity) {
+        for (float density : spectralDensity[0]) {
             builder.append(density).append(" ");
         }
 
         return builder.append("\n").toString();
+    }
+
+    @Override
+    public int getWidth()
+    {
+        return 1;
+    }
+
+    @Override
+    public int getHeight()
+    {
+        return spectralDensity.length;
     }
 
 }
