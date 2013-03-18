@@ -30,9 +30,15 @@
  */
 package cz.cuni.mff.peckam.ais;
 
+import org.joda.time.DateTime;
 
 /**
  * A set of {@link AISProduct}s forming one complete data frame.
+ * 
+ * @author Martin Pecka
+ */
+/**
+ * 
  * 
  * @author Martin Pecka
  */
@@ -46,6 +52,12 @@ public class AISProductSet implements Product<Float>
 
     /** Position of this data set in the series read from a single AIS data file. */
     private final int          positionInSeries;
+
+    /** Number of the frequency table. */
+    private final byte         frequencyTableNumber;
+
+    /** Spacecraft time of the first data row. */
+    private final DateTime     startTime;
 
     /** The data. */
     private final Float[][]    data;
@@ -65,6 +77,9 @@ public class AISProductSet implements Product<Float>
         for (int i = 0; i < data.length; i++) {
             data[i] = this.columns[i].getData()[0];
         }
+
+        this.frequencyTableNumber = columns[0].getFrequencyTableNumber();
+        this.startTime = columns[0].getSpaceCraftClock();
     }
 
     @Override
@@ -101,10 +116,38 @@ public class AISProductSet implements Product<Float>
         return positionInSeries;
     }
 
+    /**
+     * @return The number of the frequency table.
+     */
+    public byte getFrequencyTableNumber()
+    {
+        return frequencyTableNumber;
+    }
+
+    /**
+     * @return Spacecraft time of the first data row.
+     */
+    public DateTime getStartTime()
+    {
+        return startTime;
+    }
+
     @Override
     public String toString()
     {
         return "AISProductSet [startTime=" + columns[0].getSpaceCraftClock() + ", orbitNumber=" + orbitNumber
                 + ", positionInSeries=" + positionInSeries + "]";
+    }
+
+    @Override
+    public String getMetadataString()
+    {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append("Orbit: ").append(getOrbitNumber());
+        builder.append("   Frequency table: ").append(getFrequencyTableNumber());
+        builder.append("   Start time: ").append(getStartTime());
+
+        return builder.toString();
     }
 }

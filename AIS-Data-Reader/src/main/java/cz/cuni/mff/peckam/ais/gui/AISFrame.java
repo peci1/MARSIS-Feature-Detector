@@ -80,6 +80,8 @@ public class AISFrame
     private final Properties   props       = new Properties();
     /** The config file. */
     private final static File  CONFIG_FILE = new File("config.properties");
+    /** The metadata of the currently loadad product set. */
+    private JLabel             setMetadataLabel;
 
     /**
      * Launch the application.
@@ -115,6 +117,9 @@ public class AISFrame
         }
 
         initialize();
+
+        final String defaultFile = props.getProperty("defaultFile");
+        lblFileInput.setPath(defaultFile);
     }
 
     /**
@@ -131,6 +136,7 @@ public class AISFrame
                         FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
                         FormFactory.RELATED_GAP_COLSPEC, FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC, },
                         new RowSpec[] { FormFactory.RELATED_GAP_ROWSPEC, FormFactory.DEFAULT_ROWSPEC,
+                                FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("fill:default"),
                                 FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
                                 FormFactory.RELATED_GAP_ROWSPEC, }));
 
@@ -173,11 +179,9 @@ public class AISFrame
             public void actionPerformed(ActionEvent e)
             {
                 renderer.setProduct(productSets[(int) positionInSeriesComboBox.getSelectedItem()]);
+                updateSetMetadataLabel();
             }
         });
-
-        renderer = new ProductRenderer();
-        frmAisDataVisualizer.getContentPane().add(renderer, "2, 4, 5, 1, fill, fill");
 
         frmAisDataVisualizer.addWindowListener(new WindowAdapter() {
             @SuppressWarnings("synthetic-access")
@@ -192,8 +196,19 @@ public class AISFrame
             }
         });
 
-        final String defaultFile = props.getProperty("defaultFile");
-        lblFileInput.setPath(defaultFile);
+        renderer = new ProductRenderer();
+        frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 5, 1, fill, fill");
+
+        setMetadataLabel = new JLabel(" ");
+        frmAisDataVisualizer.getContentPane().add(setMetadataLabel, "2, 4, 5, 1, fill, top");
+    }
+
+    /**
+     * Update the metadata label.
+     */
+    private void updateSetMetadataLabel()
+    {
+        setMetadataLabel.setText(renderer.getProduct().getMetadataString());
     }
 
 }

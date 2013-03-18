@@ -362,4 +362,10 @@ public class AISProduct implements Product<Float>
         return spectralDensity.length;
     }
 
+    @Override
+    public String getMetadataString()
+    {
+        return this.toString();
+    }
+
 }

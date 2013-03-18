@@ -56,4 +56,9 @@ public interface Product<DataType extends Number>
      * @return Height of a column of the product's data.
      */
     int getHeight();
+
+    /**
+     * @return The metadata string.
+     */
+    String getMetadataString();
 }
