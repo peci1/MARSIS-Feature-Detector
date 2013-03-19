@@ -60,6 +60,9 @@ public class EvenlySampledIonogram extends Ionogram
     /** The ionogram's data. */
     private final Float[][] data;
 
+    /** The keys - frequencies. */
+    private final Float[]   keys;
+
     /** The original ionogram. */
     private final Ionogram  original;
 
@@ -92,8 +95,11 @@ public class EvenlySampledIonogram extends Ionogram
             data[i] = column;
         }
 
-        for (int sample = 0, col = 0; sample < data.length && col < columns.length - 1; sample++) {
+        this.keys = new Float[numSamples];
+
+        for (int sample = 0, col = 0; sample < data.length; sample++) {
             final float sampleFreq = MIN_FREQUENCY + sample / (float) numSamples * FREQUENCY_RANGE;
+            this.keys[sample] = sampleFreq / 1E6f;
 
             while (col < columns.length - 1 && sampleFreq > columns[col + 1].getFrequency())
                 col++;
@@ -114,7 +120,7 @@ public class EvenlySampledIonogram extends Ionogram
             }
 
             if (prevColumn == null || nextColumn == null)
-                break;
+                continue;
 
             final Float[] prevData = prevColumn.getData()[0];
             final Float[] nextData = nextColumn.getData()[0];
@@ -150,5 +156,11 @@ public class EvenlySampledIonogram extends Ionogram
     public Ionogram getOriginal()
     {
         return original;
+    }
+
+    @Override
+    public Float[] getKeys()
+    {
+        return this.keys;
     }
 }

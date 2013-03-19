@@ -33,6 +33,9 @@ package cz.cuni.mff.peckam.ais.gui;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 import javax.swing.JPanel;
@@ -52,13 +55,31 @@ public class ProductRenderer extends JPanel
     private static final long serialVersionUID = -8158771042857186802L;
 
     /** The product to render. */
-    private Product<?>        product          = null;
+    private Product<?, ?>     product          = null;
 
     /** Color scale. */
     private ColorScale<?>     colorScale       = null;
 
     /** The image to draw. */
     private BufferedImage     image            = null;
+
+    /** The horizontal scale. */
+    private BufferedImage     horizontalScale         = null;
+
+    /** Height of the horizontal scale. */
+    private static final int  HORIZONTAL_SCALE_HEIGHT = 40;
+
+    // initializer
+    {
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e)
+            {
+                updateHorizontalScale();
+                repaint();
+            }
+        });
+    }
 
     @Override
     protected void paintComponent(Graphics g)
@@ -69,7 +90,7 @@ public class ProductRenderer extends JPanel
             return;
 
         final int w = getWidth();
-        final int h = getHeight();
+        final int h = getHeight() - HORIZONTAL_SCALE_HEIGHT;
         final int iw = image.getWidth();
         final int ih = image.getHeight();
 
@@ -79,12 +100,19 @@ public class ProductRenderer extends JPanel
         g2.clearRect(0, 0, w, h);
 
         g2.drawImage(image, 0, 0, w, h, 0, 0, iw, ih, null);
+
+        g2.setColor(Color.white);
+        g2.clearRect(0, h, w, h + HORIZONTAL_SCALE_HEIGHT);
+        // since we are going to rotate, mixing width and height here is correct.
+        final AffineTransform transform = AffineTransform.getRotateInstance(Math.toRadians(-90));
+        transform.translate(-h - HORIZONTAL_SCALE_HEIGHT, 0);
+        g2.drawImage(horizontalScale, transform, null);
     }
 
     /**
      * @return The product to render.
      */
-    public Product<?> getProduct()
+    public Product<?, ?> getProduct()
     {
         return product;
     }
@@ -102,9 +130,9 @@ public class ProductRenderer extends JPanel
      * @param product The product to render.
      * @param colorScale The color scale used to render the product.
      */
-    public <N extends Number> void setProductAndColorScale(Product<N> product, ColorScale<N> colorScale)
+    public <N extends Number> void setProductAndColorScale(Product<N, ?> product, ColorScale<N> colorScale)
     {
-        final Product<?> oldProduct = this.product;
+        final Product<?, ?> oldProduct = this.product;
         this.product = product;
         firePropertyChange("product", oldProduct, product);
 
@@ -122,6 +150,38 @@ public class ProductRenderer extends JPanel
             }
         }
 
+        updateHorizontalScale();
+
         repaint();
+    }
+
+    /**
+     * Update the image for the horizontal scale.
+     */
+    protected void updateHorizontalScale()
+    {
+        if (getWidth() == 0)
+            return;
+
+        final Object[] keys = getProduct().getKeys();
+        // since we are going to rotate, mixing width and height here is correct.
+        horizontalScale = new BufferedImage(HORIZONTAL_SCALE_HEIGHT, getWidth(), BufferedImage.TYPE_INT_RGB);
+        final Graphics2D g = horizontalScale.createGraphics();
+        g.setBackground(Color.white);
+        g.clearRect(0, 0, horizontalScale.getWidth(), horizontalScale.getHeight());
+        g.setColor(Color.black);
+
+        final int textHeight = g.getFontMetrics().getHeight() + 2;
+        final double pixelsPerKey = horizontalScale.getHeight() / (double) keys.length;
+        final int visibleEveryNth = (int) Math.max(1, Math.ceil(textHeight / pixelsPerKey));
+
+        for (int i = 0; i < keys.length; i = i + visibleEveryNth) {
+            String label = keys[i].toString();
+            if (keys[i] instanceof Float || keys[i] instanceof Double)
+                label = String.format("%.3f", keys[i]);
+
+            g.drawString(label, 0, textHeight + horizontalScale.getHeight()
+                    * (i / (float) keys.length));
+        }
     }
 }

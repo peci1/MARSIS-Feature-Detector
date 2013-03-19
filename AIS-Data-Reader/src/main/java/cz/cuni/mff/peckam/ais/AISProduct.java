@@ -37,7 +37,7 @@ import org.joda.time.DateTime;
  * 
  * @author Martin Pecka
  */
-public class AISProduct implements Product<Float>
+public class AISProduct implements Product<Float, Void>
 {
     /**  */
     private DateTime spaceCraftClock;
@@ -366,6 +366,12 @@ public class AISProduct implements Product<Float>
     public String getMetadataString()
     {
         return this.toString();
+    }
+
+    @Override
+    public Void[] getKeys()
+    {
+        return new Void[1];
     }
 
 }

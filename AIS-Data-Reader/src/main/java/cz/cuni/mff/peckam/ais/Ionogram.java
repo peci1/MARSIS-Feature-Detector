@@ -42,7 +42,7 @@ import org.joda.time.DateTime;
  * 
  * @author Martin Pecka
  */
-public class Ionogram implements Product<Float>
+public class Ionogram implements Product<Float, Float>
 {
     /** The data columns. */
     private final AISProduct[] columns;
@@ -62,6 +62,9 @@ public class Ionogram implements Product<Float>
     /** The data. */
     private final Float[][]    data;
 
+    /** Keys - the column frequencies. */
+    private final Float[]      keys;
+
     /**
      * @param columns Data columns.
      * @param orbitNumber The orbit number.
@@ -74,8 +77,10 @@ public class Ionogram implements Product<Float>
         this.positionInSeries = positionInSeries;
 
         this.data = new Float[this.columns.length][];
+        this.keys = new Float[this.columns.length];
         for (int i = 0; i < data.length; i++) {
             data[i] = this.columns[i].getData()[0];
+            keys[i] = this.columns[i].getFrequency() / 1E6f;
         }
 
         this.frequencyTableNumber = columns[0].getFrequencyTableNumber();
@@ -157,5 +162,11 @@ public class Ionogram implements Product<Float>
         builder.append("   Start time: ").append(getStartTime());
 
         return builder.toString();
+    }
+
+    @Override
+    public Float[] getKeys()
+    {
+        return keys;
     }
 }

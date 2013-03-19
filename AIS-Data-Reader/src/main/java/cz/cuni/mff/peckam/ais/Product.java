@@ -36,8 +36,9 @@ package cz.cuni.mff.peckam.ais;
  * @author Martin Pecka
  * 
  * @param <DataType> Type of the samples this product contains.
+ * @param <ColumnKeyType> Type of the column keys.
  */
-public interface Product<DataType extends Number>
+public interface Product<DataType extends Number, ColumnKeyType>
 {
 
     /**
@@ -46,6 +47,12 @@ public interface Product<DataType extends Number>
      * @return The product's data.
      */
     DataType[][] getData();
+
+    /**
+     * @return Keys corresponding to the data. Length of the returned array should be the same as {@link #getWidth()}
+     *         value.
+     */
+    ColumnKeyType[] getKeys();
 
     /**
      * @return Width of a row of the product's data.
