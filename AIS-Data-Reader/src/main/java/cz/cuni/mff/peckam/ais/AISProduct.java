@@ -359,7 +359,7 @@ public class AISProduct implements Product<Float>
     @Override
     public int getHeight()
     {
-        return spectralDensity.length;
+        return spectralDensity[0].length;
     }
 
     @Override

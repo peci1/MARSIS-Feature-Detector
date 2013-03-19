@@ -54,6 +54,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import cz.cuni.mff.peckam.ais.AISLBLProductReader;
+import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
 
 /**
@@ -156,6 +157,9 @@ public class AISFrame
                 try {
                     final String path = lblFileInput.getPath();
                     ionograms = new AISLBLProductReader().readFile(new File(path));
+                    for (int i = 0; i < ionograms.length; i++)
+                        ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+
                     positionInSeriesComboBox.setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
                     positionInSeriesComboBox.setEnabled(true);
                     positionInSeriesComboBox.setSelectedIndex(0);
@@ -174,7 +178,7 @@ public class AISFrame
         positionInSeriesComboBox.setModel(new DefaultComboBoxModel<>(new Integer[] {}));
         frmAisDataVisualizer.getContentPane().add(positionInSeriesComboBox, "6, 2, right, default");
 
-        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-17f, 10E-9f);
+        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-18f, 10E-9f);
         positionInSeriesComboBox.addActionListener(new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override

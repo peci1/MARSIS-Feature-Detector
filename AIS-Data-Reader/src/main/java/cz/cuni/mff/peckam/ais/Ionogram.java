@@ -82,6 +82,14 @@ public class Ionogram implements Product<Float>
         this.startTime = columns[0].getSpaceCraftClock();
     }
 
+    /**
+     * @return The data columns.
+     */
+    public AISProduct[] getColumns()
+    {
+        return columns;
+    }
+
     @Override
     public Float[][] getData()
     {
