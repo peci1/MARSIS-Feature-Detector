@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -83,6 +84,10 @@ public class AISFrame
     private final static File  CONFIG_FILE = new File("config.properties");
     /** The metadata of the currently loadad product set. */
     private JLabel             setMetadataLabel;
+    /** Whether we want evenly distributed samples. */
+    private JCheckBox          evenSamplesCheckBox;
+    /**  */
+    private ActionListener     updateIonogramsAction;
 
     /**
      * Launch the application.
@@ -117,10 +122,50 @@ public class AISFrame
             // supress
         }
 
+        updateIonogramsAction = new ActionListener() {
+            @SuppressWarnings("synthetic-access")
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                try {
+                    final String path = lblFileInput.getPath();
+                    ionograms = new AISLBLProductReader().readFile(new File(path));
+
+                    if (evenSamplesCheckBox.isSelected()) {
+                        for (int i = 0; i < ionograms.length; i++)
+                            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+                    }
+
+                    positionInSeriesComboBox.setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
+                    positionInSeriesComboBox.setEnabled(true);
+                    positionInSeriesComboBox.setSelectedIndex(0);
+                    props.setProperty("defaultFile", path);
+                } catch (IOException | IllegalStateException e1) {
+                    e1.printStackTrace();
+                    positionInSeriesComboBox.setEnabled(false);
+                    JOptionPane.showMessageDialog(null, "The given file is not a valid .LBL file.");
+                }
+
+            }
+        };
+
         initialize();
 
         final String defaultFile = props.getProperty("defaultFile");
         lblFileInput.setPath(defaultFile);
+
+        frmAisDataVisualizer.addWindowListener(new WindowAdapter() {
+            @SuppressWarnings("synthetic-access")
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                try (FileOutputStream fos = new FileOutputStream(CONFIG_FILE)) {
+                    props.store(fos, null);
+                } catch (IOException e1) {
+                    // supress
+                }
+            }
+        });
     }
 
     /**
@@ -135,11 +180,11 @@ public class AISFrame
         frmAisDataVisualizer.getContentPane().setLayout(
                 new FormLayout(new ColumnSpec[] { FormFactory.RELATED_GAP_COLSPEC, FormFactory.MIN_COLSPEC,
                         FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
-                        FormFactory.RELATED_GAP_COLSPEC, FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC, },
-                        new RowSpec[] { FormFactory.RELATED_GAP_ROWSPEC, FormFactory.DEFAULT_ROWSPEC,
-                                FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("fill:default"),
-                                FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
-                                FormFactory.RELATED_GAP_ROWSPEC, }));
+                        FormFactory.RELATED_GAP_COLSPEC, FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC,
+                        FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] {
+                        FormFactory.RELATED_GAP_ROWSPEC, FormFactory.DEFAULT_ROWSPEC, FormFactory.RELATED_GAP_ROWSPEC,
+                        RowSpec.decode("fill:default"), FormFactory.RELATED_GAP_ROWSPEC,
+                        RowSpec.decode("default:grow"), FormFactory.RELATED_GAP_ROWSPEC, }));
 
         JLabel lblFileInputLabel = new JLabel(".LBL file to parse");
         frmAisDataVisualizer.getContentPane().add(lblFileInputLabel, "2, 2, left, fill");
@@ -149,36 +194,19 @@ public class AISFrame
         lblFileInputLabel.setLabelFor(lblFileInput);
         frmAisDataVisualizer.getContentPane().add(lblFileInput, "4, 2, fill, center");
         lblFileInput.setColumns(10);
-        lblFileInput.addActionListener(new ActionListener() {
-            @SuppressWarnings("synthetic-access")
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                try {
-                    final String path = lblFileInput.getPath();
-                    ionograms = new AISLBLProductReader().readFile(new File(path));
-                    for (int i = 0; i < ionograms.length; i++)
-                        ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+        lblFileInput.addActionListener(updateIonogramsAction);
 
-                    positionInSeriesComboBox.setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
-                    positionInSeriesComboBox.setEnabled(true);
-                    positionInSeriesComboBox.setSelectedIndex(0);
-                    props.setProperty("defaultFile", path);
-                } catch (IOException | IllegalStateException e1) {
-                    e1.printStackTrace();
-                    positionInSeriesComboBox.setEnabled(false);
-                    JOptionPane.showMessageDialog(null, "The given file is not a valid .LBL file.");
-                }
+        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-18f, 10E-9f);
 
-            }
-        });
+        evenSamplesCheckBox = new JCheckBox("Evenly distributed samples");
+        evenSamplesCheckBox.setSelected(true);
+        frmAisDataVisualizer.getContentPane().add(evenSamplesCheckBox, "6, 2");
+        evenSamplesCheckBox.addActionListener(updateIonogramsAction);
 
         positionInSeriesComboBox = new JComboBox<>();
         positionInSeriesComboBox.setEnabled(false);
         positionInSeriesComboBox.setModel(new DefaultComboBoxModel<>(new Integer[] {}));
-        frmAisDataVisualizer.getContentPane().add(positionInSeriesComboBox, "6, 2, right, default");
-
-        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-18f, 10E-9f);
+        frmAisDataVisualizer.getContentPane().add(positionInSeriesComboBox, "8, 2, right, default");
         positionInSeriesComboBox.addActionListener(new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override
@@ -190,21 +218,8 @@ public class AISFrame
             }
         });
 
-        frmAisDataVisualizer.addWindowListener(new WindowAdapter() {
-            @SuppressWarnings("synthetic-access")
-            @Override
-            public void windowClosing(WindowEvent e)
-            {
-                try (FileOutputStream fos = new FileOutputStream(CONFIG_FILE)) {
-                    props.store(fos, null);
-                } catch (IOException e1) {
-                    // supress
-                }
-            }
-        });
-
         renderer = new ProductRenderer();
-        frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 5, 1, fill, fill");
+        frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 7, 1, fill, fill");
 
         setMetadataLabel = new JLabel(" ");
         frmAisDataVisualizer.getContentPane().add(setMetadataLabel, "2, 4, 5, 1, fill, top");
