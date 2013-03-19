@@ -31,14 +31,21 @@
 package cz.cuni.mff.peckam.ais.gui;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.font.FontRenderContext;
+import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import javax.swing.JPanel;
+import javax.swing.UIManager;
 
 import cz.cuni.mff.peckam.ais.Product;
 
@@ -67,7 +74,10 @@ public class ProductRenderer extends JPanel
     private BufferedImage     horizontalScale         = null;
 
     /** Height of the horizontal scale. */
-    private static final int  HORIZONTAL_SCALE_HEIGHT = 40;
+    private static final int  HORIZONTAL_SCALE_HEIGHT = 30;
+
+    /** The binary hierarchy levels of labels. */
+    private Integer           prevNumLabelLevels      = null;
 
     // initializer
     {
@@ -150,10 +160,30 @@ public class ProductRenderer extends JPanel
             }
         }
 
+        prevNumLabelLevels = null;
         updateHorizontalScale();
 
         repaint();
     }
+
+    /**  */
+    private final static Font        font;
+    /**  */
+    private final static LineMetrics lineMetrics;
+    /**  */
+    private final static int         textHeight;
+    /**  */
+    private final static int         lineHeight;
+
+    static {
+        font = UIManager.getFont("Label.font").deriveFont(Font.PLAIN);
+        lineMetrics = font.getLineMetrics(String.format("%.2f", 0.12345f), new FontRenderContext(null, true, false));
+        textHeight = (int) lineMetrics.getHeight();
+        lineHeight = textHeight + 10; // add some more line-spacing
+    }
+
+    /** Cached values. */
+    private SortedSet<Integer>       labelIndices = null;
 
     /**
      * Update the image for the horizontal scale.
@@ -170,18 +200,66 @@ public class ProductRenderer extends JPanel
         g.setBackground(Color.white);
         g.clearRect(0, 0, horizontalScale.getWidth(), horizontalScale.getHeight());
         g.setColor(Color.black);
+        g.setFont(font);
 
-        final int textHeight = g.getFontMetrics().getHeight() + 2;
-        final double pixelsPerKey = horizontalScale.getHeight() / (double) keys.length;
-        final int visibleEveryNth = (int) Math.max(1, Math.ceil(textHeight / pixelsPerKey));
+        // subtracting textHeight is due to the last label to be displayed correctly
+        final int maxLabelsToDisplay = (int) Math.floor((horizontalScale.getHeight() - textHeight)
+                / (double) lineHeight);
+        // -1 for the last label
+        final int numLabelLevels = (int) Math.floor(log2(maxLabelsToDisplay - 1));
 
-        for (int i = 0; i < keys.length; i = i + visibleEveryNth) {
+        if (prevNumLabelLevels == null || prevNumLabelLevels != numLabelLevels) {
+            prevNumLabelLevels = numLabelLevels;
+            labelIndices = getLabelIndicesForLevel(0, keys.length - 2, numLabelLevels);
+            labelIndices.add(keys.length - 1);
+        }
+
+        for (Integer i : labelIndices) {
             String label = keys[i].toString();
             if (keys[i] instanceof Float || keys[i] instanceof Double)
-                label = String.format("%.3f", keys[i]);
+                label = String.format("%.2f", keys[i]);
 
-            g.drawString(label, 0, textHeight + horizontalScale.getHeight()
-                    * (i / (float) keys.length));
+            // subtracting textHeight is due to the last label to be displayed correctly;
+            // adding textHeight is due to "y" being the baseline position, not the "topline" position
+            int y = (int) (textHeight + (horizontalScale.getHeight() - textHeight) * (i / (float) keys.length));
+            // the last label has to be handled separately
+            if (i == keys.length - 1)
+                y = (int) (horizontalScale.getHeight() - lineMetrics.getDescent());
+
+            g.drawString(label, 0, y);
         }
     }
+
+    /**
+     * @param x The value.
+     * @return Base 2 log of the value.
+     */
+    private static double log2(double x)
+    {
+        return Math.log(x) / Math.log(2);
+    }
+
+    /**
+     * Return label indices up to the given binary hierarchy level.
+     * 
+     * @param startIndex First index to use.
+     * @param endIndex Last index to use.
+     * @param level The level.
+     * 
+     * @return Set of indices.
+     */
+    private static SortedSet<Integer> getLabelIndicesForLevel(int startIndex, int endIndex, int level)
+    {
+        if (level == 0)
+            return new TreeSet<>(Arrays.asList(new Integer[] { startIndex }));
+
+        final SortedSet<Integer> left = getLabelIndicesForLevel(startIndex, startIndex + (endIndex - startIndex) / 2,
+                level - 1);
+        final SortedSet<Integer> right = getLabelIndicesForLevel(startIndex + (endIndex - startIndex) / 2 + 1,
+                endIndex, level - 1);
+
+        left.addAll(right);
+        return left;
+    }
+
 }
