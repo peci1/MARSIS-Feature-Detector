@@ -98,6 +98,15 @@ public class JFileInput extends JComponent
                 }
             }
         });
+
+        textField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                fileChooser.setCurrentDirectory(new File(textField.getText()));
+                fireActionPerformed();
+            }
+        });
     }
 
     /**
