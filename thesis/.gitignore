@@ -2,7 +2,11 @@
 *.dvi
 *.log
 *.out
-*.pdf
 *.aux
 *.toc
+*.bbl
+*.upa
+*.synctex
+*.blg
 example.tex
+dp_uprava_en.pdf

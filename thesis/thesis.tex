@@ -12,7 +12,7 @@
 \setlength\headsep{0mm}
 \setlength\headheight{0mm}
 % \openright zaøídí, aby následující text zaèínal na pravé stranì knihy
-\let\openright=\clearpage
+\let\openright=\clearpage 
 
 %% Pokud používáte csLaTeX (doporuèeno):
 %\usepackage{czech}
@@ -27,7 +27,7 @@
 \usepackage{url}
 \usepackage{footnote}
 \makesavenoteenv{tabular}
-
+ 
 \usepackage{longtable}
 
 \usepackage{listings}
@@ -39,10 +39,16 @@
   columns=fullflexible,
   numbers=left, numberstyle=\tiny, stepnumber=2, numbersep=5pt,
   keywordstyle=\bfseries
-}
+} 
 
 \usepackage{graphicx}
-\usepackage{amsthm}
+\usepackage{amsthm}  
+\usepackage[numbers]{natbib}
+\usepackage{url}
+\DeclareUrlCommand\url{\def\UrlLeft{<}\def\UrlRight{>} \urlstyle{tt}}
+
+\usepackage{todonotes}
+\usepackage{epstopdf}
 
 %% Balíèek hyperref, kterým jdou vyrábìt klikací odkazy v PDF,
 %% ale hlavnì ho používáme k uložení metadat do PDF (vèetnì obsahu).
@@ -50,6 +56,9 @@
 \usepackage[unicode]{hyperref}   % Musí být za všemi ostatními balíèky
 \hypersetup{pdftitle=Detection of 2D features in MARSIS ionogram pictures}
 \hypersetup{pdfauthor=Martin Pecka}
+
+\usepackage{pdfcomment}
+\pdfcommentsetup{draft,open=true,author={Martin Pecka},icon=Comment,color=1 1 0}  
 
 %%% Drobné úpravy stylu
 
@@ -60,8 +69,8 @@
   {\parindent \z@ \raggedright \normalfont
    \Huge\bfseries \thechapter. #1
    \par\nobreak
-   \vskip 20\p@
-}}
+   \vskip 20\p@ 
+}} 
 \def\@makeschapterhead#1{
   {\parindent \z@ \raggedright \normalfont
    \Huge\bfseries #1
@@ -99,11 +108,11 @@ Faculty of Mathematics and Physics
 
 \vfill
 
-{\bf\Large MASTER THESIS}
+{\bf\Large MASTER THESIS} 
 
 \vfill
 
-\centerline{\mbox{\includegraphics[width=60mm]{img/logo.pdf}}}
+\centerline{\mbox{\includegraphics[width=60mm]{img/logo.eps}}}
 
 \vfill
 \vspace{5mm}
@@ -129,7 +138,7 @@ Supervisor of the master thesis: & RNDr.~Jana~Štanclová,~Ph.D. \\
 \noalign{\vspace{2mm}}
 Study programme: & Informatics \\
 \noalign{\vspace{2mm}}
-Specialization: & Theoretical Informatics \\
+Specialization: & Theoretical Informatics \\ 
 \end{tabular}
 
 \vfill
@@ -186,7 +195,7 @@ In Prague date ............ %TODO rucne
 \setlength\parindent{0mm}
 \setlength\parskip{5mm}
 
-Název práce:
+Název práce: 
 Hledání 2D jevù v ionografických snímcích pøístroje MARSIS
 % pøesnì dle zadání
 
@@ -201,11 +210,11 @@ Vedoucí diplomové práce:
 RNDr.~Jana~Štanclová,~Ph.D.,~Katedra~softwarového~inženýrství
 % dle Organizaèní struktury MFF UK, pøípadnì plný název pracovištì mimo MFF UK
 
-Abstrakt:
+Abstrakt: 
 Práce se zabývá technikami hledání význaèných prvkù v ionogramech zachycených pøístrojem MARSIS umístìným na kosmické sondì Mars Express. Ionogramy jsou reprezentovány jako dvourozmìrné obrázky s hodnotou kódovanou pomocí barvy. Vyvíjené techniky se snaží detekovat v takových snímcích rùzné zajímavé køivky (definované sadou parametrù), pøípadnì mìøit další parametry nalezených objektù (perioda opakování pøímek). %TODO nejake vysledky...
 
 Klíèová slova:
-rozpoznávání~vzorù, detekce, parametrické~køivky, Mars~Express
+rozpoznávání~vzorù, detekce, parametrické~køivky, Mars~Express, vektorizace
 
 \vss}\nobreak\vbox to 0.49\vsize{
 \setlength\parindent{0mm}
@@ -230,34 +239,36 @@ RNDr.~Jana~Štanclová,~Ph.D.,~Department~of~Software~Engineering
 Abstract:
 % abstrakt v rozsahu 80-200 slov v angliètinì; nejedná se však o pøeklad
 % zadání diplomové práce
-The work focuses on techniques for finding significant features in ionograms captured by the MARSIS instrument onboard the Mars Express spacecraft. Ionograms are 2D images with values represented in color. The developed techniques try to detect interesting curves (paramterically defined) in such images and measure some more parameters of the found objects (like the repetition period of lines). %TODO nejake vysledky...
+The work focuses on techniques for finding significant features in ionograms captured by the MARSIS instrument onboard the Mars Express spacecraft. Ionograms are 2D images with values represented in color. The developed techniques try to detect interesting curves (parametrically defined) in such images and measure some more parameters of the found objects (like the repetition period of lines). %TODO nejake vysledky...
 
 Keywords:
-pattern~recognition, detection, parametrical~curves, Mars~Express
+pattern~recognition, detection, parametric~curves, Mars~Express, vectorization
 % 3 až 5 klíèových slov v angliètinì
 
 \vss}
-
+ 
 \newpage
 
 %%% Strana s automaticky generovaným obsahem diplomové práce. U matematických
 %%% prací je pøípustné, aby seznam tabulek a zkratek, existují-li, byl umístìn
 %%% na zaèátku práce, místo na jejím konci.
-
+ 
 \openright
 \pagestyle{plain}
 \setcounter{page}{1}
-\tableofcontents
+\tableofcontents 
 
 %%% Jednotlivé kapitoly práce jsou pro pøehlednost uloženy v samostatných souborech
-\include{preface}
-%\include{chap1}
-%\include{chap2}
+\include{preface} 
+\include{chap1}
+\include{chap2}
 
 \include{epilog}
 
 %%% Seznam použité literatury
-\include{bibliography}
+\def\bibname{References} 
+\bibliographystyle{csplainnat}  
+\bibliography{bibliography_mendeley,bibliography_custom} 
 
 %%% Tabulky v diplomové práci, existují-li.
 \chapwithtoc{List of Tables}
