@@ -12,7 +12,11 @@
 \setlength\headsep{0mm}
 \setlength\headheight{0mm}
 % \openright zaøídí, aby následující text zaèínal na pravé stranì knihy
-\let\openright=\clearpage 
+\let\openright=\clearpage
+
+\usepackage{setspace}
+\setstretch{1.2} 
+
 
 %% Pokud používáte csLaTeX (doporuèeno):
 %\usepackage{czech}
@@ -46,6 +50,7 @@
 \usepackage[numbers]{natbib}
 \usepackage{url}
 \DeclareUrlCommand\url{\def\UrlLeft{<}\def\UrlRight{>} \urlstyle{tt}}
+\usepackage[nottoc]{tocbibind}
 
 \usepackage{todonotes}
 \usepackage{epstopdf}
@@ -266,7 +271,7 @@ pattern~recognition, detection, parametric~curves, Mars~Express, vectorization
 \include{epilog}
 
 %%% Seznam použité literatury
-\def\bibname{References} 
+%\addcontentsline{toc}{section}{Bibliography}
 \bibliographystyle{csplainnat}  
 \bibliography{bibliography_mendeley,bibliography_custom} 
 
