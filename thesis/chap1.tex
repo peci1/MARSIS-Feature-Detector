@@ -120,8 +120,28 @@ Adding to the ionospheric and surface echoes, there are three more (unexpected \
 
 \section{Ionograms}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=140mm]{images/ionogram_example.jpg}
+	\caption{Example of a ionogram showing most of the detectable features like ionospheric echo, surface reflection, electron cyclotron echoes and electron plasma oscillation harmonics. No oblique ionospheric echo is present. The vertical axis shows delay time in ms, the horizontal axis stands for frequency in MHz and color codes the spectral density of the received electric field in V$^2$m$^{-2}$Hz$^{-1}$. Based on real data obtained from \citep{FTP}.}
+	\label{fig:example_ionogram}
+\end{figure}
+
+Ionograms are the basic visualization of the ionospheric sounding data. Akalin \citep{Akalin2010} defines ionograms in the following precise way:
+\begin{quote} 
+Ionograms are produced by transmitting a short pulse at a fixed frequency, $f$, and measuring the received intensity at 80~consecutive values of the time delay, ${\Updelta}t$, spaced \n[{\upmu}s]{91.4} apart. The frequency is then incremented and the process is repeated. For each of 160~frequencies, quasi-logarithmically spaced between \n{0.1} and \n[MHz]{5.5}, there are 80~delay time bins, spaced \n[{\upmu}s]{91.4} apart, beginning \n[{\upmu}s]{162.5} after the end of the sounding pulse. Ionograms represent received intensity as a function of time delay and frequency. As shown by the ionogram in Fig. \ref{fig:example_ionogram}, time delay is displayed in milliseconds along the vertical axis, frequency is displayed in megahertz along the horizontal axis, and the color bar represents the received electric field spectral density in V$^2$m$^{-2}$Hz$^{-1}$.
+\end{quote}
+
+Several more or less continuous patterns can be found in the example ionogram. Some of them form repetition patterns. The example ionogram is rather rare, because often just one or two such patterns occur in a single ionogram. There are also ionograms consisting entirely of noise. The subsequent sections will discuss all the patterns and their physical meaning.
+
+\subsection{Ionospheric echo}
+
+\subsection{Surface echo}
+
+\subsection{Oblique ionospheric echo}
+\label{ssec:oblique}
+
 \subsection{Electron cyclotron echoes}
 \label{ssec:cyclotronEchoes}
 
-\subsection{Oblique ionospheric echoes}
-\label{ssec:oblique}
+\subsection{Electron plasma oscillation harmonics}
