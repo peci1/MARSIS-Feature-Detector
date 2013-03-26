@@ -132,9 +132,14 @@ Ionograms are the basic visualization of the ionospheric sounding data. Akalin \
 Ionograms are produced by transmitting a short pulse at a fixed frequency, $f$, and measuring the received intensity at 80~consecutive values of the time delay, ${\Updelta}t$, spaced \n[{\upmu}s]{91.4} apart. The frequency is then incremented and the process is repeated. For each of 160~frequencies, quasi-logarithmically spaced between \n{0.1} and \n[MHz]{5.5}, there are 80~delay time bins, spaced \n[{\upmu}s]{91.4} apart, beginning \n[{\upmu}s]{162.5} after the end of the sounding pulse. Ionograms represent received intensity as a function of time delay and frequency. As shown by the ionogram in Fig. \ref{fig:example_ionogram}, time delay is displayed in milliseconds along the vertical axis, frequency is displayed in megahertz along the horizontal axis, and the color bar represents the received electric field spectral density in V$^2$m$^{-2}$Hz$^{-1}$.
 \end{quote}
 
-Several more or less continuous patterns can be found in the example ionogram. Some of them form repetition patterns. The example ionogram is rather rare, because often just one or two such patterns occur in a single ionogram. There are also ionograms consisting entirely of noise. The subsequent sections will discuss all the patterns and their physical meaning.
+Several more or less continuous patterns can be found in the example ionogram. Some of them form repetitious patterns. It can be also seen that the data are very noisy. The example ionogram is rather rare, because often just one or two such patterns occur in a single ionogram. There are also ionograms consisting entirely of noise. The subsequent sections will discuss all the patterns and their physical meaning.
 
 \subsection{Ionospheric echo}
+As seen in Fig. \ref{fig:example_ionogram}, the ionospheric echo is a horizontally oriented non-straight line. It usually appears in the lower half of the ionogram (delay times about 4 to \n[ms]{5}). Its left end is located where the local f$_p$ frequency starts to be higher than the sounding frequency, which is most often somewhere below \n[MHz]{1}. Its right end should be placed at f$_p$(max) frequency, where all higher-frequency waves pass to the surface \citep[p.~1929]{Gurnett2005}. 
+
+There is often a sharp cusp at the right end of the echo. ``The cusp occurs because the propagation speed of the wave packet (i.e., the group velocity) is very small over an increasingly long path length as the wave frequency approaches f$_p$(max)'' \citep[p.~1929]{Gurnett2005}. On the other hand, the echo often doesn't extend up to f$_p$(max) \citep[p.~1930]{Gurnett2005}.
+
+As we have mentioned earlier, it is possible to read out the local electron plasma frequency from the echo, thus obtaining the electron density vertical profile. In order to extract the profile, it is needed to identify the curve fitting the echo. Automatic identification of such curve is one of the goals of this work. Especially correct estimation of the right end would be helpful if the cusp is present.  
 
 \subsection{Surface echo}
 
