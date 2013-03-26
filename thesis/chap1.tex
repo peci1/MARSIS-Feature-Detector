@@ -153,6 +153,26 @@ From surface echoes it is easy to read the apparent height over surface (omittin
 \subsection{Oblique ionospheric echo}
 \label{ssec:oblique}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=140mm]{images/oblique_echo.jpg}
+	\caption{A ionogram containing oblique ionospheric echo. It is worth notice that the echo appears to origin under the surface level (because of the delay time higher than the delay time to surface). Based on real data obtained from \citep{FTP}.}
+	\label{fig:oblique_echo}
+\end{figure}
+
+The first of unexpected features emergent in ionograms are oblique ionospheric echoes. An example of such echo is displayed in Fig. \ref{fig:oblique_echo}. It is an echo of similar shape and horizontal boundaries as the ionospheric echo, but located a few ms lower in the ionogram. Often even lower than the surface echo -- but the radar waves don't even reach the surface at the frequencies of the ionospheric echo.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=140mm]{images/oblique_explanation.jpg}
+	\caption{A ionospheric bulge created by strong crustal magnetic field can produce oblique ionospheric echoes. \citep{Gurnett2005}}
+	\label{fig:oblique_explanation}
+\end{figure}
+
+An explanation of this effect is given in \citep[pp.~1931--1933]{Gurnett2005}. At locations with strong crustal magnetic field, this field forms bulges in the ionosphere. Such bulges, if lying aside the MEX track, reflect the waves from the sounder under such angle that the antenna records the reflections. However, since the track of these waves isn't vertical, they may travel longer distances than to the surface before they return. An illustration of this effect is provided in Fig. \ref{fig:oblique_explanation}.
+
+To detect oblique echoes in ionograms could be of some use, because they point to places with ionosphere bulges and strong crustal fields. However, deriving the shapes of the bulges or the crustal fields would be very complicated \citep[p.~1932]{Gurnett2005}. Therefore, we won't try to detect them in the task-specific algorithms devised in this thesis. 
+
 \subsection{Electron cyclotron echoes}
 \label{ssec:cyclotronEchoes}
 
