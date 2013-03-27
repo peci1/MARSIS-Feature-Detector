@@ -81,7 +81,7 @@
 \makeatletter
 \def\@makechapterhead#1{
   {\parindent \z@ \raggedright \normalfont
-   \Huge\bfseries \thechapter. #1
+   \Huge\bfseries \thechapter\ #1
    \par\nobreak
    \vskip 20\p@ 
 }} 
@@ -216,19 +216,20 @@ Hledání 2D jevù v ionografických snímcích pøístroje MARSIS
 Autor:
 Bc.~Martin~Pecka
 
-Katedra:  % Pøípadnì Ústav:
-Katedra~softwarového~inženýrství
+Ústav:  % Pøípadnì Ústav:
+Ústav~výpoèetní~techniky~Univerzity~Karlovy~v~Praze
 % dle Organizaèní struktury MFF UK
 
 Vedoucí diplomové práce:
-RNDr.~Jana~Štanclová,~Ph.D.,~Katedra~softwarového~inženýrství
+RNDr.~Jana~Štanclová,~Ph.D., Ústav~výpoèetní~techniky~Univerzity~Karlovy~v~Praze
 % dle Organizaèní struktury MFF UK, pøípadnì plný název pracovištì mimo MFF UK
 
 Abstrakt: 
-Práce se zabývá technikami hledání význaèných prvkù v ionogramech zachycených pøístrojem MARSIS umístìným na kosmické sondì Mars Express. Ionogramy jsou reprezentovány jako dvourozmìrné obrázky s hodnotou kódovanou pomocí barvy. Vyvíjené techniky se snaží detekovat v takových snímcích rùzné zajímavé køivky (definované sadou parametrù), pøípadnì mìøit další parametry nalezených objektù (perioda opakování pøímek). %TODO nejake vysledky...
+Práce se zabývá technikami hledání význaèných prvkù v ionogramech zachycených pøístrojem MARSIS umístìným na kosmické sondì Mars Express. Identifikace tìchto prvkù pomáhá pøi studiu ionosféry, magnetosféry a plazmatu v okolí Marsu. Ionogramy jsou reprezentovány jako dvourozmìrné obrázky s hodnotou kódovanou pomocí barvy. Cílem práce je navrhnout techniky pro detekci rùzných zajímavých køivek (definovaných sadou parametrù) v ionogramech, pøípadnì pro mìøení dalších parametrù nalezených objektù (perioda opakování pøímek). %TODO nejake vysledky...
+\pdfcomment{Mám sem pøidat nìjaké výsledky, až budou?}
 
 Klíèová slova:
-rozpoznávání~vzorù, detekce, parametrické~køivky, Mars~Express, vektorizace
+rozpoznávání~vzorù, detekce~objektù, parametrické~køivky, Mars~Express, vektorizace
 
 \vss}\nobreak\vbox to 0.49\vsize{
 \setlength\parindent{0mm}
@@ -241,22 +242,22 @@ Detection of 2D features in MARSIS ionogram pictures
 Author:
 Bc.~Martin~Pecka
 
-Department:
-Department~of~Software~Engineering
+Centre:
+Charles~University~Computer~Centre
 % dle Organizaèní struktury MFF UK v angliètinì
 
 Supervisor:
-RNDr.~Jana~Štanclová,~Ph.D.,~Department~of~Software~Engineering
+RNDr.~Jana~Štanclová,~Ph.D., Charles~University~Computer~Centre
 % dle Organizaèní struktury MFF UK, pøípadnì plný název pracovištì
 % mimo MFF UK v angliètinì
 
 Abstract:
 % abstrakt v rozsahu 80-200 slov v angliètinì; nejedná se však o pøeklad
 % zadání diplomové práce
-The work focuses on techniques for finding significant features in ionograms captured by the MARSIS instrument onboard the Mars Express spacecraft. Ionograms are 2D images with values represented in color. The developed techniques try to detect interesting curves (parametrically defined) in such images and measure some more parameters of the found objects (like the repetition period of lines). %TODO nejake vysledky...
+The work focuses on techniques for finding significant features in ionograms captured by the MARSIS instrument onboard the Mars Express spacecraft. Identification of these features helps in studying the ionosphere, magnetosphere and plasma surrounding Mars. Ionograms are 2D images with values represented in color. The goal of this work is to propose techniques to detect interesting curves (parametrically defined) in such images and to measure some more parameters of the found objects (like the repetition period of lines). %TODO nejake vysledky...
 
 Keywords:
-pattern~recognition, detection, parametric~curves, Mars~Express, vectorization
+pattern~recognition, object~detection, parametric~curves, Mars~Express, vectorization
 % 3 až 5 klíèových slov v angliètinì
 
 \vss}
