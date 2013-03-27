@@ -180,7 +180,18 @@ It is stated in \citep[p.~1929]{Gurnett2005} that these echoes ``are at harmonic
 
 As all features detected by the ionospheric sounders, also plasma oscillation harmonics may not be present in a ionogram. There are three main reasons for it: when the local electron density is less than \n[cm^{-3}]{10}, when the plasma flow velocity is more than \n[km/h]{160} or when the temperature is greater than \n{8521}~$n_e~\degree$K ($n_e$~stands for electron density in cm$^{-3}$; this happens in solar wind) \citep[p.~4]{Duru2008}.
 
-Although the base oscillation frequency is occasionally captured in ionograms (when higher than \n[kHz]{100}, the sounder's lowest frequency), it is apparently more precise to derive the frequency from the harmonics spacing (using multiple fit). That is what we will focus on in later chapters.  
+Although the base oscillation frequency is occasionally captured in ionograms (when higher than \n[kHz]{100}, the sounder's lowest frequency), it is apparently more precise to derive the frequency from the harmonics spacing (using multiple fit). That is what we will focus on in later chapters. 
+
+As a benefit, this method allows to measure the electron density in heights up to \n[km]{1300} which corresponds to very low densities. Such low densities couldn't be detected by the radar sounder. 
 
 \subsection{Electron cyclotron echoes}
 \label{ssec:cyclotronEchoes}
+The last unanticipated phenomenon appearing in ionograms are the electron cyclotron echoes. These are regularly-repeating straight horizontal lines in ionograms. They always start from the lowest sounding frequency (the left edge) and extend to frequencies up to \n[MHz]{2} \citep[p.~3]{Akalin2010}. It can be observed in Fig. \ref{fig:example_ionogram} that the repetition can appear at the whole vertical range.
+
+Comparing with the magnetic field model of Mars, \citep{Gurnett2005} determined that the repetition frequency of these echoes corresponds to local electron cyclotron frequency $f_c$. That frequency can be expressed as $f_c~=~28~B~\mathrm{Hz}$, $B$ being the magnetic field strength in nT. Thus, knowing the repetition rate of the echoes, we are able to determine the strength of the magnetic field. That is a very important application, since MEX doesn't carry a magnetometer \citep[p.~1930]{Gurnett2005}. There is also a method to derive the vector component of the magnetic field under some conditions \citep{Akalin2010}.
+
+The origin of these echoes is described in \citep[p.~1930]{Gurnett2005}: ``We believe that these echoes are caused by electrons accelerated by the strong electric fields near the antenna during each cycle of the transmitter waveform. The cyclotron motion of the electrons in the local magnetic field then causes these electrons to periodically return to the vicinity of the antenna, where they induce a signal on the antenna.''
+
+Some constraints, of course, apply to the presence of cyclotron echoes in ionograms. Firstly, the magnetic field strength must be uniform on an area larger than the cyclotron radius (which is about \n[km]{1}). According to \citep[p.~1930]{Gurnett2005} this is easily satisfied. Further, the sounder's minimum and maximum time delay resolution constrains the detectable field strengths. The minimum resolution of \n[{\upmu}s]{182.2} corresponds to field strength of \n[nT]{195}, while the maximum delay of \n[ms]{7.5} corresponds to field strength of about \n[nT]{5}. However, in practice the reasonable range for confident measurements is about 12 -- \n[nT]{160} \citep[p.~3]{Akalin2010}.
+
+Similarly to the plasma oscillation harmonics, we are interested in the period of repetition of these echoes. If we can compute it, we are able to compute the strength of the magnetic field and, in some cases, also its direction. We will also focus on detection of this period in our survey.
