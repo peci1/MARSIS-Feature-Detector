@@ -173,7 +173,14 @@ An explanation of this effect is given in \citep[pp.~1931--1933]{Gurnett2005}. A
 
 To detect oblique echoes in ionograms could be of some use, because they point to places with ionosphere bulges and strong crustal fields. However, deriving the shapes of the bulges or the crustal fields would be very complicated \citep[p.~1932]{Gurnett2005}. Therefore, we won't try to detect them in the task-specific algorithms devised in this thesis. 
 
+\subsection{Electron plasma oscillation harmonics}
+Another surprise are repetitious straight vertical lines in ionograms, electron plasma oscillation harmonics (called also Langmuir waves \citep[p.~2]{Duru2008}). As can be seen in Fig. \ref{fig:example_ionogram}, they appear near the top left corner of ionograms. They always start at the top of the image and continue towards the bottom; they may disappear on any time delay. Although they are mainly located in the left part of ionograms, occasionally the may repeat up to the right edge. More than 10~repetitions are, however, rare \citep[p.~4]{Duru2008}.
+
+It is stated in \citep[p.~1929]{Gurnett2005} that these echoes ``are at harmonics of the local electron plasma frequency and are caused by the excitation of electron plasma oscillations, [\ldots]. Even if the fundamental of the plasma frequency is not observed directly [\ldots], the plasma frequency can still be determined from the spacing of the harmonics.'' The reason why not only the base frequency is present, but also its harmonics, is described in \citep[p.~2]{Duru2008}: ``Since the electron plasma oscillations are usually very intense, [\ldots] the received waveforms are often severely clipped. The resulting distortion then introduces harmonics at multiples of the basic oscillation frequency.''
+
+As all features detected by the ionospheric sounders, also plasma oscillation harmonics may not be present in a ionogram. There are three main reasons for it: when the local electron density is less than \n[cm^{-3}]{10}, when the plasma flow velocity is more than \n[km/h]{160} or when the temperature is greater than \n{8521}~$n_e~\degree$K ($n_e$~stands for electron density in cm$^{-3}$; this happens in solar wind) \citep[p.~4]{Duru2008}.
+
+Although the base oscillation frequency is occasionally captured in ionograms (when higher than \n[kHz]{100}, the sounder's lowest frequency), it is apparently more precise to derive the frequency from the harmonics spacing (using multiple fit). That is what we will focus on in later chapters.  
+
 \subsection{Electron cyclotron echoes}
 \label{ssec:cyclotronEchoes}
-
-\subsection{Electron plasma oscillation harmonics}
