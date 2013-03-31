@@ -22,11 +22,11 @@ public class FTPDataDownloader
     /**
      * The FTP directory in which image files are stored.
      */
-    private static final String  IMAGE_DIR       = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-V1.0/BROWSE/ACTIVE_IONOSPHERIC_SOUNDER/";
+    private static final String  IMAGE_DIR       = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-EXT2-V1.0/BROWSE/ACTIVE_IONOSPHERIC_SOUNDER/";
     /**
      * The FTP directory in which data are stored.
      */
-    private static final String  DATA_DIR        = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-V1.0/DATA/ACTIVE_IONOSPHERIC_SOUNDER/";
+    private static final String  DATA_DIR        = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-EXT2-V1.0/DATA/ACTIVE_IONOSPHERIC_SOUNDER/";
 
     /**
      * The number of already downloaded files.

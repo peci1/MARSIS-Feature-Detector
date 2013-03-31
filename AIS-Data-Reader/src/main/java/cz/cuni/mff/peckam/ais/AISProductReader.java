@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 /**
  * Reader for AIS products.
@@ -71,6 +70,7 @@ public class AISProductReader
 
             for (int i = 0; i < result.length; i++) {
                 // maybe needs to consider it is unsigned int
+                @SuppressWarnings("unused")
                 final int sclk_second = stream.readInt();
                 @SuppressWarnings("unused")
                 final int sclk_column = stream.readUnsignedShort();
@@ -86,11 +86,9 @@ public class AISProductReader
 
                 final byte[] scet_string_bytes = new byte[24];
                 stream.readFully(scet_string_bytes);
-                @SuppressWarnings("unused")
-                final String scet_string = new String(scet_string_bytes);
+                final String scet_string = new String(scet_string_bytes).trim();
 
-                final DateTime spacecraft_clock = new DateTime(2003, 5, 3, 0, 0, DateTimeZone.UTC)
-                        .plusSeconds(sclk_second);
+                final DateTime spacecraft_clock = DateTime.parse(scet_string);
 
                 final byte process_id = stream.readByte();
                 final byte instrument_mode = stream.readByte();
