@@ -30,6 +30,10 @@
  */
 package cz.cuni.mff.peckam.ais;
 
+import java.awt.Point;
+import java.util.LinkedList;
+import java.util.List;
+
 import org.joda.time.DateTime;
 
 /**
@@ -37,12 +41,7 @@ import org.joda.time.DateTime;
  * 
  * @author Martin Pecka
  */
-/**
- * 
- * 
- * @author Martin Pecka
- */
-public class Ionogram implements Product<Float, Float>
+public class Ionogram implements Product<Float, Float, Float>
 {
     /** The data columns. */
     private final AISProduct[] columns;
@@ -63,7 +62,16 @@ public class Ionogram implements Product<Float, Float>
     private final Float[][]    data;
 
     /** Keys - the column frequencies. */
-    private final Float[]      keys;
+    private final Float[]        columnKeys;
+
+    /** The minimal column value. */
+    private final Float          minColumnValue;
+
+    /** The maximal column value. */
+    private final Float          maxColumnValue;
+
+    /** The overlays. */
+    private final List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> overlays = new LinkedList<>();
 
     /**
      * @param columns Data columns.
@@ -77,14 +85,17 @@ public class Ionogram implements Product<Float, Float>
         this.positionInSeries = positionInSeries;
 
         this.data = new Float[this.columns.length][];
-        this.keys = new Float[this.columns.length];
+        this.columnKeys = new Float[this.columns.length];
         for (int i = 0; i < data.length; i++) {
             data[i] = this.columns[i].getData()[0];
-            keys[i] = this.columns[i].getFrequency() / 1E6f;
+            columnKeys[i] = this.columns[i].getFrequency() / 1E6f;
         }
 
         this.frequencyTableNumber = columns[0].getFrequencyTableNumber();
         this.startTime = columns[0].getSpaceCraftClock();
+
+        this.minColumnValue = columnKeys[0];
+        this.maxColumnValue = columnKeys[columnKeys.length - 1];
     }
 
     /**
@@ -165,8 +176,103 @@ public class Ionogram implements Product<Float, Float>
     }
 
     @Override
-    public Float[] getKeys()
+    public Float[] getColumnKeys()
     {
-        return keys;
+        return columnKeys;
+    }
+
+    @Override
+    public Float[] getRowKeys()
+    {
+        return columns[0].getRowKeys();
+    }
+
+    /**
+     * @return The minimal column value.
+     */
+    protected Float getMinColumnValue()
+    {
+        return minColumnValue;
+    }
+
+    /**
+     * @return The maximal column value.
+     */
+    protected Float getMaxColumnValue()
+    {
+        return maxColumnValue;
+    }
+
+    /**
+     * @return The height of a row.
+     */
+    protected Float getRowHeight()
+    {
+        return columns[0].getRowHeight();
+    }
+
+    /**
+     * @return The minimal row value.
+     */
+    protected Float getMinRowValue()
+    {
+        return columns[0].getMinRowValue();
+    }
+
+    /**
+     * @return The maximal row value.
+     */
+    protected Float getMaxRowValue()
+    {
+        return columns[0].getMaxRowValue();
+    }
+
+    @Override
+    public Point getDataPosition(Float row, Float column)
+    {
+        if (row < getMinRowValue() || row > getMaxRowValue())
+            throw new IllegalArgumentException("Row value must lie within the interval <" + getMinRowValue() + "; "
+                    + getMaxRowValue() + ">, but " + row + " was given.");
+
+        if (column < getMinColumnValue() || column > getMaxColumnValue()) {
+            throw new IllegalArgumentException("Column value must lie within the interval <" + getMinColumnValue()
+                    + "; " + getMaxColumnValue() + ">, but " + column + " was given.");
+        }
+
+        int rowPosition = columns[0].getDataPosition(row, null).x;
+
+        Integer bestColumnKeyIndex = null;
+        Float bestColumnKeyDistance = null;
+
+        final Float[] columnKeys = getColumnKeys();
+        for (int i = 0; i < columnKeys.length; i++) {
+            final float columnKey = columnKeys[i];
+            final float distance = Math.abs(columnKey - column);
+            if (bestColumnKeyDistance == null || bestColumnKeyDistance > distance) {
+                bestColumnKeyDistance = distance;
+                bestColumnKeyIndex = i;
+            }
+        }
+
+        if (bestColumnKeyIndex == null)
+            throw new IllegalStateException("Couldn't find corresponding column key for column value " + column);
+
+        return new Point(rowPosition, bestColumnKeyIndex);
+    }
+
+    @Override
+    public List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> getOverlays()
+    {
+        return overlays;
+    }
+
+    /**
+     * Add the given overlay to this ionogram.
+     * 
+     * @param overlay The overlay to add.
+     */
+    public void addOverlay(ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> overlay)
+    {
+        this.overlays.add(overlay);
     }
 }

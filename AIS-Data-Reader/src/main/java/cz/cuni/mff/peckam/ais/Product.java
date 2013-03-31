@@ -30,6 +30,9 @@
  */
 package cz.cuni.mff.peckam.ais;
 
+import java.awt.Point;
+import java.util.List;
+
 /**
  * A general product of generic data type with basic properties.
  * 
@@ -37,8 +40,9 @@ package cz.cuni.mff.peckam.ais;
  * 
  * @param <DataType> Type of the samples this product contains.
  * @param <ColumnKeyType> Type of the column keys.
+ * @param <RowKeyType> Type of the row keys.
  */
-public interface Product<DataType extends Number, ColumnKeyType>
+public interface Product<DataType extends Number, ColumnKeyType, RowKeyType>
 {
 
     /**
@@ -49,10 +53,16 @@ public interface Product<DataType extends Number, ColumnKeyType>
     DataType[][] getData();
 
     /**
-     * @return Keys corresponding to the data. Length of the returned array should be the same as {@link #getWidth()}
-     *         value.
+     * @return Keys corresponding to the data columns. Length of the returned array should be the same as
+     *         {@link #getWidth()} value.
      */
-    ColumnKeyType[] getKeys();
+    ColumnKeyType[] getColumnKeys();
+
+    /**
+     * @return Keys corresponding to the data rows. Length of the returned array should be the same as
+     *         {@link #getHeight()} value.
+     */
+    RowKeyType[] getRowKeys();
 
     /**
      * @return Width of a row of the product's data.
@@ -68,4 +78,21 @@ public interface Product<DataType extends Number, ColumnKeyType>
      * @return The metadata string.
      */
     String getMetadataString();
+
+    /**
+     * Return the position in {@link #getData()} array corresponding to the given row and column keys.
+     * <p>
+     * The given "keys" don't have to be exactly the keys returned by {@link #getColumnKeys()} or {@link #getRowKeys()},
+     * they can be "intervalues" (if it makes sense) interpolated from the real keys.
+     * 
+     * @param row The row key.
+     * @param column The column key.
+     * @return Position in {@link #getData()} array.
+     */
+    Point getDataPosition(RowKeyType row, ColumnKeyType column);
+
+    /**
+     * @return All overlays defined on this product.
+     */
+    List<ProductOverlay<?, ColumnKeyType, RowKeyType, ? extends Product<DataType, ColumnKeyType, RowKeyType>>> getOverlays();
 }

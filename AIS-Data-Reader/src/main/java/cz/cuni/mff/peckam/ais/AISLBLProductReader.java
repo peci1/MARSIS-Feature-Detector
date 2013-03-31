@@ -37,6 +37,12 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.joda.time.DateTime;
+
+import cz.cuni.mff.peckam.ais.result.FrameType;
+import cz.cuni.mff.peckam.ais.result.Orbit;
+import cz.cuni.mff.peckam.ais.result.ResultReader;
+
 /**
  * Reader for .LBL files associated with AIS products.
  * 
@@ -109,6 +115,24 @@ public class AISLBLProductReader
                 columns[j] = products[i * NUM_COLUMNS + j];
             }
             result[i] = new Ionogram(columns, orbit_number, i);
+        }
+
+        { // add AIS detection result overlay
+            final File resultsFile = new File(lblFile.getParent(), "TRACE_" + orbit_number + ".XML");
+            if (resultsFile.exists()) {
+                final Orbit results = new ResultReader().readResult(resultsFile);
+                final Map<DateTime, FrameType> framesByTime = new HashMap<>();
+                for (FrameType frame : results.getFrames()) {
+                    framesByTime.put(frame.getTime(), frame);
+                }
+
+                for (Ionogram ionogram : result) {
+                    final FrameType frame = framesByTime.get(ionogram.getStartTime());
+                    if (frame != null) {
+                        ionogram.addOverlay(new AISResultOverlay(ionogram, frame));
+                    }
+                }
+            }
         }
 
         return result;

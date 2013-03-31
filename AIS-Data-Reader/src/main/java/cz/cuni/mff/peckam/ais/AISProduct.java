@@ -30,6 +30,10 @@
  */
 package cz.cuni.mff.peckam.ais;
 
+import java.awt.Point;
+import java.util.Collections;
+import java.util.List;
+
 import org.joda.time.DateTime;
 
 /**
@@ -37,7 +41,7 @@ import org.joda.time.DateTime;
  * 
  * @author Martin Pecka
  */
-public class AISProduct implements Product<Float, Void>
+public class AISProduct implements Product<Float, Void, Float>
 {
     /**  */
     private DateTime spaceCraftClock;
@@ -61,6 +65,25 @@ public class AISProduct implements Product<Float, Void>
     private float    frequency;
     /**  */
     private Float[][] spectralDensity;
+
+    /** The row keys. */
+    private final static Float[] rowKeys           = new Float[80];
+
+    /** The width of one time delay bin. */
+    private final static Float   timeDelayBinWidth = 0.0914f;
+
+    /** The minimal row value. */
+    private final static Float   minRowValue       = 0.1625f;
+
+    /** The maximal row value. */
+    private final static Float   maxRowValue       = minRowValue + (79 * timeDelayBinWidth);
+
+    static {
+        rowKeys[0] = minRowValue;
+        for (int i = 1; i < rowKeys.length; i++) {
+            rowKeys[i] = rowKeys[i - 1] + timeDelayBinWidth;
+        }
+    }
 
     /**
      * @param spaceCraftClock Capture time.
@@ -369,9 +392,58 @@ public class AISProduct implements Product<Float, Void>
     }
 
     @Override
-    public Void[] getKeys()
+    public Void[] getColumnKeys()
     {
         return new Void[1];
+    }
+
+    @Override
+    public Float[] getRowKeys()
+    {
+        return rowKeys;
+    }
+
+    /**
+     * @return The minimal row value.
+     */
+    protected Float getMinRowValue()
+    {
+        return minRowValue;
+    }
+
+    /**
+     * @return The maximal row value.
+     */
+    protected Float getMaxRowValue()
+    {
+        return maxRowValue;
+    }
+
+    /**
+     * @return The height of one row.
+     */
+    protected Float getRowHeight()
+    {
+        return timeDelayBinWidth;
+    }
+
+    @Override
+    public Point getDataPosition(Float row, Void column)
+    {
+        if (row < getMinRowValue() || row > getMaxRowValue())
+            throw new IllegalArgumentException("Row value must lie within the interval <" + getMinRowValue() + "; "
+                    + getMaxRowValue() + ">, but " + row + " was given.");
+
+        int rowPosition = (int) ((row - getMinRowValue()) / (getMaxRowValue() - getMinRowValue()) * getRowKeys().length);
+        rowPosition = Math.min(rowPosition, getRowKeys().length - 1);
+
+        return new Point(rowPosition, 0);
+    }
+
+    @Override
+    public List<ProductOverlay<?, Void, Float, ? extends Product<Float, Void, Float>>> getOverlays()
+    {
+        return Collections.emptyList();
     }
 
 }

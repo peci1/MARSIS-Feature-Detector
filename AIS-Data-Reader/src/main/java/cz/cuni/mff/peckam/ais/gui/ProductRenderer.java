@@ -34,6 +34,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.font.FontRenderContext;
@@ -41,6 +42,7 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
+import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -48,6 +50,8 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 
 import cz.cuni.mff.peckam.ais.Product;
+import cz.cuni.mff.peckam.ais.ProductOverlay;
+import cz.cuni.mff.peckam.ais.Tuple;
 
 /**
  * Renderer for data products.
@@ -62,7 +66,7 @@ public class ProductRenderer extends JPanel
     private static final long serialVersionUID = -8158771042857186802L;
 
     /** The product to render. */
-    private Product<?, ?>     product          = null;
+    private Product<?, ?, ?>  product                 = null;
 
     /** Color scale. */
     private ColorScale<?>     colorScale       = null;
@@ -122,7 +126,7 @@ public class ProductRenderer extends JPanel
     /**
      * @return The product to render.
      */
-    public Product<?, ?> getProduct()
+    public Product<?, ?, ?> getProduct()
     {
         return product;
     }
@@ -137,12 +141,14 @@ public class ProductRenderer extends JPanel
 
     /**
      * @param <N> The numeric type of the product.
+     * @param <C> Type of the column keys.
+     * @param <R> Type of the row keys.
      * @param product The product to render.
      * @param colorScale The color scale used to render the product.
      */
-    public <N extends Number> void setProductAndColorScale(Product<N, ?> product, ColorScale<N> colorScale)
+    public <N extends Number, C, R> void setProductAndColorScale(Product<N, C, R> product, ColorScale<N> colorScale)
     {
-        final Product<?, ?> oldProduct = this.product;
+        final Product<?, ?, ?> oldProduct = this.product;
         this.product = product;
         firePropertyChange("product", oldProduct, product);
 
@@ -157,6 +163,16 @@ public class ProductRenderer extends JPanel
             for (int y = 0; y < image.getHeight(); y++) {
                 final Color color = colorScale.getColor(data[x][y]);
                 image.setRGB(x, y, color.getRGB());
+            }
+        }
+
+        for (ProductOverlay<?, C, R, ?> overlay : product.getOverlays()) {
+            for (Entry<Tuple<R, C>, ?> entry : overlay.getValues().entrySet()) {
+                if (entry.getValue() != null) {
+                    final Tuple<R, C> key = entry.getKey();
+                    final Point point = product.getDataPosition(key.getX(), key.getY());
+                    image.setRGB(point.y, point.x, Color.white.getRGB());
+                }
             }
         }
 
@@ -193,7 +209,7 @@ public class ProductRenderer extends JPanel
         if (getWidth() == 0)
             return;
 
-        final Object[] keys = getProduct().getKeys();
+        final Object[] keys = getProduct().getColumnKeys();
         // since we are going to rotate, mixing width and height here is correct.
         horizontalScale = new BufferedImage(HORIZONTAL_SCALE_HEIGHT, getWidth(), BufferedImage.TYPE_INT_RGB);
         final Graphics2D g = horizontalScale.createGraphics();
