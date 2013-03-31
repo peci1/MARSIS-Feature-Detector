@@ -185,6 +185,8 @@ public class AISFrame
                             ionograms = get();
 
                             if (ionograms != null) {
+                                final int oldIndex = positionInSeriesComboBox.getSelectedIndex();
+
                                 positionInSeriesComboBox
                                         .setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
                                 positionInSeriesComboBox.setEnabled(true);
@@ -192,8 +194,7 @@ public class AISFrame
                                 if (e.getSource() != evenSamplesCheckBox) {
                                     positionInSeriesComboBox.setSelectedIndex(0);
                                 } else {
-                                    positionInSeriesComboBox.setSelectedIndex(positionInSeriesComboBox
-                                            .getSelectedIndex());
+                                    positionInSeriesComboBox.setSelectedIndex(oldIndex);
                                 }
 
                                 lblFileInput.setEnabled(true);
