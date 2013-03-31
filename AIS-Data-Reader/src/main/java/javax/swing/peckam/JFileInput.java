@@ -42,6 +42,9 @@ public class JFileInput extends JComponent
      */
     protected final JButton   browseButton     = new JButton("Procházet...");
 
+    /** The value this input had right after being focused. */
+    private String            originalValue    = null;
+
     /**
      * @return the button for opening file chooser
      */
@@ -105,6 +108,9 @@ public class JFileInput extends JComponent
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                if (textField.getText().trim().equals(originalValue))
+                    return;
+
                 fileChooser.setCurrentDirectory(new File(textField.getText()));
                 fireActionPerformed();
             }
@@ -112,9 +118,6 @@ public class JFileInput extends JComponent
 
         textField.addActionListener(pathChangeAction);
         textField.addFocusListener(new FocusAdapter() {
-            /** The value this input had right after being focused. */
-            private String originalValue = null;
-
             @Override
             public void focusGained(FocusEvent arg0)
             {
@@ -124,8 +127,7 @@ public class JFileInput extends JComponent
             @Override
             public void focusLost(FocusEvent e)
             {
-                if (!textField.getText().trim().equals(originalValue))
-                    pathChangeAction.actionPerformed(null);
+                pathChangeAction.actionPerformed(null);
             }
         });
     }

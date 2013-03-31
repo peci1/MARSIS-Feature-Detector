@@ -173,7 +173,8 @@ public class AISFrame
                             e1.printStackTrace();
                             positionInSeriesComboBox.setEnabled(false);
                             JOptionPane.showMessageDialog(null, "The given file is not a valid .LBL file.");
-                            renderer.setLoadingText("Loading the .LBL file failed.");
+                            renderer.setLoadingText("Loading the .LBL file has failed.");
+                            lblFileInput.setEnabled(true);
                             return null;
                         }
                     }
