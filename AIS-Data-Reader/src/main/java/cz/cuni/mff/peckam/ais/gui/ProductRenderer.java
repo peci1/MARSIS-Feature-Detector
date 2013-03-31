@@ -45,8 +45,10 @@ import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.JPanel;
+import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 
 import cz.cuni.mff.peckam.ais.Product;
@@ -83,6 +85,9 @@ public class ProductRenderer extends JPanel
     /** The binary hierarchy levels of labels. */
     private Integer           prevNumLabelLevels      = null;
 
+    /** The loading text to be displayed. */
+    private String            loadingText             = null;
+
     // initializer
     {
         addComponentListener(new ComponentAdapter() {
@@ -100,8 +105,10 @@ public class ProductRenderer extends JPanel
     {
         super.paintComponent(g);
 
-        if (product == null)
+        if (product == null || image == null) {
+            g.drawString("Loading...", getWidth() / 2, getHeight() / 2);
             return;
+        }
 
         final int w = getWidth();
         final int h = getHeight() - HORIZONTAL_SCALE_HEIGHT;
@@ -121,6 +128,19 @@ public class ProductRenderer extends JPanel
         final AffineTransform transform = AffineTransform.getRotateInstance(Math.toRadians(-90));
         transform.translate(-h - HORIZONTAL_SCALE_HEIGHT, 0);
         g2.drawImage(horizontalScale, transform, null);
+
+        if (loadingText != null) {
+            g.drawString(loadingText, getWidth() / 2, getHeight() / 2);
+        }
+    }
+
+    /**
+     * @param loadingText The text to show. <code>null</code> to turn the message off.
+     */
+    public synchronized void setLoadingText(String loadingText)
+    {
+        this.loadingText = loadingText;
+        repaint();
     }
 
     /**
@@ -146,8 +166,11 @@ public class ProductRenderer extends JPanel
      * @param product The product to render.
      * @param colorScale The color scale used to render the product.
      */
-    public <N extends Number, C, R> void setProductAndColorScale(Product<N, C, R> product, ColorScale<N> colorScale)
+    public <N extends Number, C, R> void setProductAndColorScale(final Product<N, C, R> product,
+            final ColorScale<N> colorScale)
     {
+        setLoadingText("Switching the displayed data...");
+
         final Product<?, ?, ?> oldProduct = this.product;
         this.product = product;
         firePropertyChange("product", oldProduct, product);
@@ -156,30 +179,49 @@ public class ProductRenderer extends JPanel
         this.colorScale = colorScale;
         firePropertyChange("colorScale", oldScale, colorScale);
 
-        image = new BufferedImage(product.getWidth(), product.getHeight(), BufferedImage.TYPE_INT_RGB);
+        new SwingWorker<BufferedImage, Void>() {
+            @Override
+            protected BufferedImage doInBackground() throws Exception
+            {
+                final BufferedImage image = new BufferedImage(product.getWidth(), product.getHeight(),
+                        BufferedImage.TYPE_INT_RGB);
 
-        final N[][] data = product.getData();
-        for (int x = 0; x < image.getWidth(); x++) {
-            for (int y = 0; y < image.getHeight(); y++) {
-                final Color color = colorScale.getColor(data[x][y]);
-                image.setRGB(x, y, color.getRGB());
+                final N[][] data = product.getData();
+                for (int x = 0; x < image.getWidth(); x++) {
+                    for (int y = 0; y < image.getHeight(); y++) {
+                        final Color color = colorScale.getColor(data[x][y]);
+                        image.setRGB(x, y, color.getRGB());
+                    }
+                }
+
+                for (ProductOverlay<?, C, R, ?> overlay : product.getOverlays()) {
+                    for (Entry<Tuple<R, C>, ?> entry : overlay.getValues().entrySet()) {
+                        if (entry.getValue() != null) {
+                            final Tuple<R, C> key = entry.getKey();
+                            final Point point = product.getDataPosition(key.getX(), key.getY());
+                            image.setRGB(point.y, point.x, Color.white.getRGB());
+                        }
+                    }
+                }
+
+                prevNumLabelLevels = null;
+                updateHorizontalScale();
+
+                return image;
             }
-        }
 
-        for (ProductOverlay<?, C, R, ?> overlay : product.getOverlays()) {
-            for (Entry<Tuple<R, C>, ?> entry : overlay.getValues().entrySet()) {
-                if (entry.getValue() != null) {
-                    final Tuple<R, C> key = entry.getKey();
-                    final Point point = product.getDataPosition(key.getX(), key.getY());
-                    image.setRGB(point.y, point.x, Color.white.getRGB());
+            @Override
+            protected void done()
+            {
+                try {
+                    image = get();
+                    setLoadingText(null);
+                    repaint();
+                } catch (InterruptedException | ExecutionException e) {
+                    e.printStackTrace();
                 }
             }
-        }
-
-        prevNumLabelLevels = null;
-        updateHorizontalScale();
-
-        repaint();
+        }.execute();
     }
 
     /**  */
@@ -206,7 +248,7 @@ public class ProductRenderer extends JPanel
      */
     protected void updateHorizontalScale()
     {
-        if (getWidth() == 0)
+        if (getWidth() == 0 || getProduct() == null)
             return;
 
         final Object[] keys = getProduct().getColumnKeys();

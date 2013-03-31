@@ -39,7 +39,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -47,6 +50,7 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
 import javax.swing.peckam.JFileInput;
 
 import com.jgoodies.forms.factories.FormFactory;
@@ -96,6 +100,17 @@ public class AISFrame
      */
     public static void main(String[] args)
     {
+        final PrintStream oldErr = System.err;
+        final long startMilis = System.currentTimeMillis();
+
+        System.setErr(new PrintStream(oldErr, true) {
+            @Override
+            public void println(String x)
+            {
+                super.printf(Locale.ENGLISH, "%7.3f: " + x + "\n", (System.currentTimeMillis() - startMilis) / 1000.0);
+            }
+        });
+
         EventQueue.invokeLater(new Runnable() {
             @SuppressWarnings("synthetic-access")
             @Override
@@ -125,27 +140,79 @@ public class AISFrame
         updateIonogramsAction = new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override
-            public void actionPerformed(ActionEvent e)
+            public void actionPerformed(final ActionEvent e)
             {
-                try {
-                    final String path = lblFileInput.getPath();
-                    ionograms = new AISLBLProductReader().readFile(new File(path));
+                lblFileInput.setEnabled(false);
+                evenSamplesCheckBox.setEnabled(false);
+                positionInSeriesComboBox.setEnabled(false);
 
-                    if (evenSamplesCheckBox.isSelected()) {
-                        for (int i = 0; i < ionograms.length; i++)
-                            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+                renderer.setLoadingText("Loading the .LBL file...");
+
+                ionograms = null;
+
+                new SwingWorker<Ionogram[], Void>() {
+                    @Override
+                    protected Ionogram[] doInBackground() throws Exception
+                    {
+                        try {
+                            final String path = lblFileInput.getPath().trim();
+                            if (path.isEmpty())
+                                return null;
+
+                            Ionogram[] ionograms = new AISLBLProductReader().readFile(new File(path));
+
+                            props.setProperty("defaultFile", path);
+
+                            if (evenSamplesCheckBox.isSelected()) {
+                                for (int i = 0; i < ionograms.length; i++)
+                                    ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+                            }
+
+                            return ionograms;
+                        } catch (IOException | IllegalStateException e1) {
+                            e1.printStackTrace();
+                            positionInSeriesComboBox.setEnabled(false);
+                            JOptionPane.showMessageDialog(null, "The given file is not a valid .LBL file.");
+                            renderer.setLoadingText("Loading the .LBL file failed.");
+                            return null;
+                        }
                     }
 
-                    positionInSeriesComboBox.setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
-                    positionInSeriesComboBox.setEnabled(true);
-                    positionInSeriesComboBox.setSelectedIndex(0);
-                    props.setProperty("defaultFile", path);
-                } catch (IOException | IllegalStateException e1) {
-                    e1.printStackTrace();
-                    positionInSeriesComboBox.setEnabled(false);
-                    JOptionPane.showMessageDialog(null, "The given file is not a valid .LBL file.");
-                }
+                    @Override
+                    protected void done()
+                    {
+                        try {
+                            ionograms = get();
 
+                            if (ionograms != null) {
+                                positionInSeriesComboBox
+                                        .setModel(new NumericRangeComboBoxModel(0, ionograms.length - 1));
+                                positionInSeriesComboBox.setEnabled(true);
+
+                                if (e.getSource() != evenSamplesCheckBox) {
+                                    positionInSeriesComboBox.setSelectedIndex(0);
+                                } else {
+                                    positionInSeriesComboBox.setSelectedIndex(positionInSeriesComboBox
+                                            .getSelectedIndex());
+                                }
+
+                                lblFileInput.setEnabled(true);
+                                evenSamplesCheckBox.setEnabled(true);
+                            }
+
+                            renderer.setLoadingText(null);
+                        } catch (InterruptedException | ExecutionException e) {
+                            e.printStackTrace();
+
+                            lblFileInput.setEnabled(true);
+                            evenSamplesCheckBox.setEnabled(false);
+                            positionInSeriesComboBox.setEnabled(false);
+
+                            JOptionPane.showMessageDialog(null, "Couldn't load the given .LBL file.");
+                        }
+                    }
+
+                }.execute();
             }
         };
 
@@ -164,6 +231,18 @@ public class AISFrame
                 } catch (IOException e1) {
                     // supress
                 }
+            }
+        });
+
+        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-18f, 10E-9f);
+        positionInSeriesComboBox.addActionListener(new ActionListener() {
+            @SuppressWarnings("synthetic-access")
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                renderer.setProductAndColorScale(ionograms[(int) positionInSeriesComboBox.getSelectedItem()],
+                        colorScale);
+                updateSetMetadataLabel();
             }
         });
     }
@@ -196,8 +275,6 @@ public class AISFrame
         lblFileInput.setColumns(10);
         lblFileInput.addActionListener(updateIonogramsAction);
 
-        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-18f, 10E-9f);
-
         evenSamplesCheckBox = new JCheckBox("Evenly distributed samples");
         evenSamplesCheckBox.setSelected(true);
         frmAisDataVisualizer.getContentPane().add(evenSamplesCheckBox, "6, 2");
@@ -207,16 +284,6 @@ public class AISFrame
         positionInSeriesComboBox.setEnabled(false);
         positionInSeriesComboBox.setModel(new DefaultComboBoxModel<>(new Integer[] {}));
         frmAisDataVisualizer.getContentPane().add(positionInSeriesComboBox, "8, 2, right, default");
-        positionInSeriesComboBox.addActionListener(new ActionListener() {
-            @SuppressWarnings("synthetic-access")
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                renderer.setProductAndColorScale(ionograms[(int) positionInSeriesComboBox.getSelectedItem()],
-                        colorScale);
-                updateSetMetadataLabel();
-            }
-        });
 
         renderer = new ProductRenderer();
         frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 7, 1, fill, fill");

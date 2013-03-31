@@ -30,6 +30,7 @@
  */
 package cz.cuni.mff.peckam.ais;
 
+import java.awt.Point;
 import java.util.Arrays;
 
 /**
@@ -168,4 +169,25 @@ public class EvenlySampledIonogram extends Ionogram
     {
         return this.columnKeys;
     }
+
+    @Override
+    public Point getDataPosition(Float row, Float column)
+    {
+        if (row < getMinRowValue() || row > getMaxRowValue())
+            throw new IllegalArgumentException("Row value must lie within the interval <" + getMinRowValue() + "; "
+                    + getMaxRowValue() + ">, but " + row + " was given.");
+
+        if (column < getMinColumnValue() || column > getMaxColumnValue()) {
+            throw new IllegalArgumentException("Column value must lie within the interval <" + getMinColumnValue()
+                    + "; " + getMaxColumnValue() + ">, but " + column + " was given.");
+        }
+
+        final int rowPosition = getColumns()[0].getDataPosition(row, null).x;
+
+        int colPosition = (int) ((column - getMinColumnValue()) / (getMaxColumnValue() - getMinColumnValue()) * getColumnKeys().length);
+        colPosition = Math.min(colPosition, getColumnKeys().length - 1);
+
+        return new Point(rowPosition, colPosition);
+    }
+
 }

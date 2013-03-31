@@ -112,10 +112,20 @@ public class JFileInput extends JComponent
 
         textField.addActionListener(pathChangeAction);
         textField.addFocusListener(new FocusAdapter() {
+            /** The value this input had right after being focused. */
+            private String originalValue = null;
+
+            @Override
+            public void focusGained(FocusEvent arg0)
+            {
+                originalValue = textField.getText().trim();
+            }
+
             @Override
             public void focusLost(FocusEvent e)
             {
-                pathChangeAction.actionPerformed(null);
+                if (!textField.getText().trim().equals(originalValue))
+                    pathChangeAction.actionPerformed(null);
             }
         });
     }
