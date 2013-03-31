@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>cz.cuni.mff.peckam.ais</groupId>
+  <artifactId>result-converter</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>AIS result file format converter</name>
+  <dependencies>
+  	<dependency>
+  		<groupId>cz.cuni.mff.peckam.ais</groupId>
+  		<artifactId>ais-reader</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>cz.cuni.mff.peckam.ais</groupId>
+  		<artifactId>result</artifactId>
+  		<version>0.0.1-SNAPSHOT</version>
+  	</dependency>
+  </dependencies>
+</project>
