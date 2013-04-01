@@ -28,49 +28,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package cz.cuni.mff.peckam.ais;
+package cz.cuni.mff.peckam.ais.gui;
 
-import java.util.Map;
+import java.awt.Color;
+
+import cz.cuni.mff.peckam.ais.AISLBLProductReader;
+import cz.cuni.mff.peckam.ais.ProductOverlay;
 
 /**
- * Overlay layer over a product
+ * Factory for creatign {@link OverlayRenderer}s.
  * 
  * @author Martin Pecka
- * 
- * @param <DataType> Type of the samples this overlay contains.
- * @param <ColType> Type of the column keys.
- * @param <RowType> Type of the row keys.
- * @param <ProductType> Type of the product this overlay is intended to work on.
  */
-public interface ProductOverlay<DataType, ColType, RowType, ProductType extends Product<?, ColType, RowType>>
+public class OverlayRendererFactory
 {
-    /** The default overlay type. */
-    public static final String TYPE_DEFAULT = "default";
-
     /**
-     * Return the value of this overlay at the specified coordinates in its product.
+     * Return a renderer corresponding to the given overlay.
      * 
-     * @param rowValue The row value.
-     * @param columnValue The column value.
-     * @return The value of this overlay or <code>null</code> if it doesn't hold a value for the given coordinates.
+     * @param overlay The overlay to get renderer for.
+     * @return The renderer for the overlay.
      */
-    DataType getValue(RowType rowValue, ColType columnValue);
-
-    /**
-     * Return the values of this overlay at over its product.
-     * 
-     * @return The values corresponding to coordinates. <code>null</code>s at coordinates not defined by this overlay.
-     */
-    Map<Tuple<RowType, ColType>, ? extends DataType> getValues();
-
-    /**
-     * @return The product this overlay is based on.
-     */
-    ProductType getProduct();
-
-    /**
-     * @return The type of this field. It may be used to e.g. decide how to visualize the overlay. Defaults to
-     *         {@link #TYPE_DEFAULT}.
-     */
-    String getType();
+    public OverlayRenderer createRenderer(ProductOverlay<?, ?, ?, ?> overlay)
+    {
+        if (overlay.getType().equals(AISLBLProductReader.OVERLAY_TYPE_MANUAL)) {
+            return new SingleColorOverlayRenderer(Color.white);
+        } else if (overlay.getType().equals(AISLBLProductReader.OVERLAY_TYPE_AUTOMATIC)) {
+            return new SingleColorOverlayRenderer(Color.red);
+        } else {
+            return null;
+        }
+    }
 }

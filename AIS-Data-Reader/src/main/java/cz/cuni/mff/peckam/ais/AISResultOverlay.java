@@ -54,14 +54,19 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
     /** The overlay values. */
     private final Map<Tuple<Float, Float>, Boolean> values;
 
+    /** The type of the overlay. */
+    private final String                            type;
+
     /**
      * @param ionogram The overlaid ionogram.
      * @param resultData The data of the overlay.
+     * @param type The type of the overlay.
      */
-    public AISResultOverlay(Ionogram ionogram, FrameType resultData)
+    public AISResultOverlay(Ionogram ionogram, FrameType resultData, String type)
     {
         this.ionogram = ionogram;
         this.resultData = resultData;
+        this.type = type;
 
         values = new HashMap<>();
 
@@ -101,6 +106,12 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
     public Ionogram getProduct()
     {
         return ionogram;
+    }
+
+    @Override
+    public String getType()
+    {
+        return type;
     }
 
 }

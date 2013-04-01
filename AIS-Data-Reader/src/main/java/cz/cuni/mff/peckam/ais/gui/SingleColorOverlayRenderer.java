@@ -28,49 +28,46 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package cz.cuni.mff.peckam.ais;
+package cz.cuni.mff.peckam.ais.gui;
 
-import java.util.Map;
+import java.awt.Color;
+import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.util.Map.Entry;
+
+import cz.cuni.mff.peckam.ais.Product;
+import cz.cuni.mff.peckam.ais.ProductOverlay;
+import cz.cuni.mff.peckam.ais.Tuple;
 
 /**
- * Overlay layer over a product
- * 
+ * Overlay renderer that renders "boolean" overlays having at each pixel either a color (when a value is defined) or transparency.
+ *
  * @author Martin Pecka
- * 
- * @param <DataType> Type of the samples this overlay contains.
- * @param <ColType> Type of the column keys.
- * @param <RowType> Type of the row keys.
- * @param <ProductType> Type of the product this overlay is intended to work on.
  */
-public interface ProductOverlay<DataType, ColType, RowType, ProductType extends Product<?, ColType, RowType>>
+public class SingleColorOverlayRenderer implements OverlayRenderer
 {
-    /** The default overlay type. */
-    public static final String TYPE_DEFAULT = "default";
+
+    /** The RGB value of the color to use. */
+    private final int color;
 
     /**
-     * Return the value of this overlay at the specified coordinates in its product.
-     * 
-     * @param rowValue The row value.
-     * @param columnValue The column value.
-     * @return The value of this overlay or <code>null</code> if it doesn't hold a value for the given coordinates.
+     * @param color The color to use for rendering.
      */
-    DataType getValue(RowType rowValue, ColType columnValue);
+    public SingleColorOverlayRenderer(Color color)
+    {
+        this.color = color.getRGB();
+    }
 
-    /**
-     * Return the values of this overlay at over its product.
-     * 
-     * @return The values corresponding to coordinates. <code>null</code>s at coordinates not defined by this overlay.
-     */
-    Map<Tuple<RowType, ColType>, ? extends DataType> getValues();
-
-    /**
-     * @return The product this overlay is based on.
-     */
-    ProductType getProduct();
-
-    /**
-     * @return The type of this field. It may be used to e.g. decide how to visualize the overlay. Defaults to
-     *         {@link #TYPE_DEFAULT}.
-     */
-    String getType();
+    @Override
+    public <ColType, RowType> void render(BufferedImage image, ProductOverlay<?, ColType, RowType, ?> overlay,
+            Product<?, ColType, RowType> product)
+    {
+        for (Entry<Tuple<RowType, ColType>, ?> entry : overlay.getValues().entrySet()) {
+            if (entry.getValue() != null) {
+                final Tuple<RowType, ColType> key = entry.getKey();
+                final Point point = product.getDataPosition(key.getX(), key.getY());
+                image.setRGB(point.y, point.x, color);
+            }
+        }
+    }
 }

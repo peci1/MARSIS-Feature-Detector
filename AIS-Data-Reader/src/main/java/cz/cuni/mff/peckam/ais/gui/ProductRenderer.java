@@ -34,7 +34,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.font.FontRenderContext;
@@ -42,7 +41,6 @@ import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
@@ -53,7 +51,6 @@ import javax.swing.UIManager;
 
 import cz.cuni.mff.peckam.ais.Product;
 import cz.cuni.mff.peckam.ais.ProductOverlay;
-import cz.cuni.mff.peckam.ais.Tuple;
 
 /**
  * Renderer for data products.
@@ -88,6 +85,9 @@ public class ProductRenderer extends JPanel
     /** The loading text to be displayed. */
     private String            loadingText             = null;
 
+    /** The factory creating overlay renderers. */
+    private final OverlayRendererFactory overlayRendererFactory;
+
     // initializer
     {
         addComponentListener(new ComponentAdapter() {
@@ -98,6 +98,8 @@ public class ProductRenderer extends JPanel
                 repaint();
             }
         });
+
+        overlayRendererFactory = createOverlayRendererFactory();
     }
 
     @Override
@@ -195,13 +197,8 @@ public class ProductRenderer extends JPanel
                 }
 
                 for (ProductOverlay<?, C, R, ?> overlay : product.getOverlays()) {
-                    for (Entry<Tuple<R, C>, ?> entry : overlay.getValues().entrySet()) {
-                        if (entry.getValue() != null) {
-                            final Tuple<R, C> key = entry.getKey();
-                            final Point point = product.getDataPosition(key.getX(), key.getY());
-                            image.setRGB(point.y, point.x, Color.white.getRGB());
-                        }
-                    }
+                    final OverlayRenderer renderer = overlayRendererFactory.createRenderer(overlay);
+                    renderer.render(image, overlay, product);
                 }
 
                 prevNumLabelLevels = null;
@@ -286,6 +283,14 @@ public class ProductRenderer extends JPanel
 
             g.drawString(label, 0, y);
         }
+    }
+
+    /**
+     * @return The overlay renderer factory.
+     */
+    protected OverlayRendererFactory createOverlayRendererFactory()
+    {
+        return new OverlayRendererFactory();
     }
 
     /**

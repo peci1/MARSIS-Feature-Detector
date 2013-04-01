@@ -53,6 +53,12 @@ public class AISLBLProductReader
     /** Number of columns each ionogram contains. */
     private static final int NUM_COLUMNS = 160;
 
+    /** Overlay type defining manually obtained data. */
+    public static final String OVERLAY_TYPE_MANUAL    = "manual";
+
+    /** Overlay type defining automatically obtained data. */
+    public static final String OVERLAY_TYPE_AUTOMATIC = "automatic";
+
     /**
      * Read {@link Ionogram}s from the given file.
      * 
@@ -129,7 +135,7 @@ public class AISLBLProductReader
                 for (Ionogram ionogram : result) {
                     final FrameType frame = framesByTime.get(ionogram.getStartTime());
                     if (frame != null) {
-                        ionogram.addOverlay(new AISResultOverlay(ionogram, frame));
+                        ionogram.addOverlay(new AISResultOverlay(ionogram, frame, OVERLAY_TYPE_MANUAL));
                     }
                 }
             }

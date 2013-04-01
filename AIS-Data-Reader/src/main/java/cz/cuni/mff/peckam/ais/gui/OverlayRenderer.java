@@ -28,49 +28,30 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package cz.cuni.mff.peckam.ais;
+package cz.cuni.mff.peckam.ais.gui;
 
-import java.util.Map;
+import java.awt.image.BufferedImage;
+
+import cz.cuni.mff.peckam.ais.Product;
+import cz.cuni.mff.peckam.ais.ProductOverlay;
 
 /**
- * Overlay layer over a product
+ * Renderer for {@link ProductOverlay}s.
  * 
  * @author Martin Pecka
- * 
- * @param <DataType> Type of the samples this overlay contains.
- * @param <ColType> Type of the column keys.
- * @param <RowType> Type of the row keys.
- * @param <ProductType> Type of the product this overlay is intended to work on.
  */
-public interface ProductOverlay<DataType, ColType, RowType, ProductType extends Product<?, ColType, RowType>>
+public interface OverlayRenderer
 {
-    /** The default overlay type. */
-    public static final String TYPE_DEFAULT = "default";
-
     /**
-     * Return the value of this overlay at the specified coordinates in its product.
+     * Render the given overlay onto the given image.
      * 
-     * @param rowValue The row value.
-     * @param columnValue The column value.
-     * @return The value of this overlay or <code>null</code> if it doesn't hold a value for the given coordinates.
-     */
-    DataType getValue(RowType rowValue, ColType columnValue);
-
-    /**
-     * Return the values of this overlay at over its product.
+     * @param <RowType> Type of row keys.
+     * @param <ColType> Type of column keys.
      * 
-     * @return The values corresponding to coordinates. <code>null</code>s at coordinates not defined by this overlay.
+     * @param image The image to draw to.
+     * @param overlay The overlay to draw.
+     * @param product The product to overlay.
      */
-    Map<Tuple<RowType, ColType>, ? extends DataType> getValues();
-
-    /**
-     * @return The product this overlay is based on.
-     */
-    ProductType getProduct();
-
-    /**
-     * @return The type of this field. It may be used to e.g. decide how to visualize the overlay. Defaults to
-     *         {@link #TYPE_DEFAULT}.
-     */
-    String getType();
+    <ColType, RowType> void render(BufferedImage image, ProductOverlay<?, ColType, RowType, ?> overlay,
+            Product<?, ColType, RowType> product);
 }
