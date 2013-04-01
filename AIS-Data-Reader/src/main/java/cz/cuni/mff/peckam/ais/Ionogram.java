@@ -190,7 +190,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The minimal column value.
      */
-    protected float getMinColumnValue()
+    public float getMinColumnValue()
     {
         return minColumnValue;
     }
@@ -198,7 +198,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The maximal column value.
      */
-    protected float getMaxColumnValue()
+    public float getMaxColumnValue()
     {
         return maxColumnValue;
     }
@@ -206,7 +206,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The height of a row.
      */
-    protected float getRowHeight()
+    public float getRowHeight()
     {
         return columns[0].getRowHeight();
     }
@@ -214,7 +214,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The minimal row value.
      */
-    protected float getMinRowValue()
+    public float getMinRowValue()
     {
         return columns[0].getMinRowValue();
     }
@@ -222,7 +222,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The maximal row value.
      */
-    protected float getMaxRowValue()
+    public float getMaxRowValue()
     {
         return columns[0].getMaxRowValue();
     }
@@ -274,5 +274,11 @@ public class Ionogram implements Product<Float, Float, Float>
     public void addOverlay(ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> overlay)
     {
         this.overlays.add(overlay);
+    }
+
+    @Override
+    public Object getId()
+    {
+        return getStartTime();
     }
 }

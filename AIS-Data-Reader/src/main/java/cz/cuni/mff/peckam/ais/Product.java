@@ -80,6 +80,11 @@ public interface Product<DataType extends Number, ColumnKeyType, RowKeyType>
     String getMetadataString();
 
     /**
+     * @return The object uniquely identifying this product.
+     */
+    Object getId();
+
+    /**
      * Return the position in {@link #getData()} array corresponding to the given row and column keys.
      * <p>
      * The given "keys" don't have to be exactly the keys returned by {@link #getColumnKeys()} or {@link #getRowKeys()},

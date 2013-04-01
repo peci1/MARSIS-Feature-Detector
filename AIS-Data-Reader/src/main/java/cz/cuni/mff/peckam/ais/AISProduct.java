@@ -446,4 +446,10 @@ public class AISProduct implements Product<Float, Void, Float>
         return Collections.emptyList();
     }
 
+    @Override
+    public Object getId()
+    {
+        return spaceCraftClock;
+    }
+
 }
