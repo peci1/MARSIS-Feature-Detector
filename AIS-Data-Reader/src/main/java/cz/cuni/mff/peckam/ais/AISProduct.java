@@ -70,13 +70,13 @@ public class AISProduct implements Product<Float, Void, Float>
     private final static Float[] rowKeys           = new Float[80];
 
     /** The width of one time delay bin. */
-    private final static Float   timeDelayBinWidth = 0.0914f;
+    private final static float   timeDelayBinWidth = 0.0914f;
 
     /** The minimal row value. */
-    private final static Float   minRowValue       = 0.1625f;
+    private final static float   minRowValue       = 0.1625f;
 
     /** The maximal row value. */
-    private final static Float   maxRowValue       = minRowValue + (79 * timeDelayBinWidth);
+    private final static float   maxRowValue       = minRowValue + (79 * timeDelayBinWidth);
 
     static {
         rowKeys[0] = minRowValue;
@@ -406,7 +406,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * @return The minimal row value.
      */
-    protected Float getMinRowValue()
+    protected float getMinRowValue()
     {
         return minRowValue;
     }
@@ -414,7 +414,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * @return The maximal row value.
      */
-    protected Float getMaxRowValue()
+    protected float getMaxRowValue()
     {
         return maxRowValue;
     }
@@ -422,7 +422,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * @return The height of one row.
      */
-    protected Float getRowHeight()
+    protected float getRowHeight()
     {
         return timeDelayBinWidth;
     }

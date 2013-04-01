@@ -65,10 +65,10 @@ public class Ionogram implements Product<Float, Float, Float>
     private final Float[]        columnKeys;
 
     /** The minimal column value. */
-    private final Float          minColumnValue;
+    private final float                                                                         minColumnValue;
 
     /** The maximal column value. */
-    private final Float          maxColumnValue;
+    private final float                                                                         maxColumnValue;
 
     /** The overlays. */
     private final List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> overlays = new LinkedList<>();
@@ -190,7 +190,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The minimal column value.
      */
-    protected Float getMinColumnValue()
+    protected float getMinColumnValue()
     {
         return minColumnValue;
     }
@@ -198,7 +198,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The maximal column value.
      */
-    protected Float getMaxColumnValue()
+    protected float getMaxColumnValue()
     {
         return maxColumnValue;
     }
@@ -206,7 +206,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The height of a row.
      */
-    protected Float getRowHeight()
+    protected float getRowHeight()
     {
         return columns[0].getRowHeight();
     }
@@ -214,7 +214,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The minimal row value.
      */
-    protected Float getMinRowValue()
+    protected float getMinRowValue()
     {
         return columns[0].getMinRowValue();
     }
@@ -222,7 +222,7 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The maximal row value.
      */
-    protected Float getMaxRowValue()
+    protected float getMaxRowValue()
     {
         return columns[0].getMaxRowValue();
     }
@@ -242,13 +242,13 @@ public class Ionogram implements Product<Float, Float, Float>
         int rowPosition = columns[0].getDataPosition(row, null).x;
 
         Integer bestColumnKeyIndex = null;
-        Float bestColumnKeyDistance = null;
+        float bestColumnKeyDistance = Float.MAX_VALUE;
 
         final Float[] columnKeys = getColumnKeys();
         for (int i = 0; i < columnKeys.length; i++) {
             final float columnKey = columnKeys[i];
             final float distance = Math.abs(columnKey - column);
-            if (bestColumnKeyDistance == null || bestColumnKeyDistance > distance) {
+            if (bestColumnKeyDistance > distance) {
                 bestColumnKeyDistance = distance;
                 bestColumnKeyIndex = i;
             }

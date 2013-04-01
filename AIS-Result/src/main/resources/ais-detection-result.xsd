@@ -21,13 +21,13 @@
 		</appinfo>
 	</annotation>
 
-    <element name="orbit" type="tns:orbitType" ></element>
+    <element name="orbit" type="tns:orbitType"></element>
 
 	<complexType name="orbitType">
 		<sequence maxOccurs="unbounded" minOccurs="1">
 			<element name="frame" type="tns:frameType"></element>
 		</sequence>
-		<attribute name="id" type="int"></attribute>
+		<attribute name="id" type="int" use="required"></attribute>
 	</complexType>
 
     <complexType name="frameType">
@@ -55,8 +55,8 @@
     </complexType>
 
     <complexType name="pointType">
-    	<attribute name="x" type="float"></attribute>
-    	<attribute name="y" type="float"></attribute>
+    	<attribute name="x" type="float" use="required"></attribute>
+    	<attribute name="y" type="float" use="required"></attribute>
     </complexType>
 
 	<simpleType name="datetime">
