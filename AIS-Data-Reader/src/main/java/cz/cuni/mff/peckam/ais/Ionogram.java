@@ -36,6 +36,8 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
+import cz.cuni.mff.peckam.ais.result.FrameType;
+
 /**
  * A set of {@link AISProduct}s forming one complete data frame.
  * 
@@ -72,6 +74,9 @@ public class Ionogram implements Product<Float, Float, Float>
 
     /** The overlays. */
     private final List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> overlays = new LinkedList<>();
+
+    /** The referential result of feature detection. */
+    private FrameType                                                                           referenceDetectionResult = null;
 
     /**
      * @param columns Data columns.
@@ -281,4 +286,21 @@ public class Ionogram implements Product<Float, Float, Float>
     {
         return getStartTime();
     }
+
+    /**
+     * @return The referential result of feature detection.
+     */
+    public FrameType getReferenceDetectionResult()
+    {
+        return referenceDetectionResult;
+    }
+
+    /**
+     * @param referenceDetectionResult The referential result of feature detection.
+     */
+    public void setReferenceDetectionResult(FrameType referenceDetectionResult)
+    {
+        this.referenceDetectionResult = referenceDetectionResult;
+    }
+
 }

@@ -172,6 +172,7 @@ public class DetectionFrame
      */
     protected void registerDetectorPresentations()
     {
+        detectorPresentations.add(new ReferenceDataPresentation());
         detectorPresentations.add(new SummingDetectorPresentation());
     }
 

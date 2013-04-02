@@ -136,6 +136,7 @@ public class AISLBLProductReader
                     final FrameType frame = framesByTime.get(ionogram.getStartTime());
                     if (frame != null) {
                         ionogram.addOverlay(new AISResultOverlay(ionogram, frame, OVERLAY_TYPE_MANUAL));
+                        ionogram.setReferenceDetectionResult(frame);
                     }
                 }
             }

@@ -60,7 +60,7 @@ public class DetectAndSave
     private static final ObjectFactory                   factory   = new ObjectFactory();
 
     /** Converts {@link DetectionResult}s to {@link FrameType}s. */
-    private static final DetectionResultToFrameConverter converter = new DetectionResultToFrameConverter();
+    private static final DetectionResultConverter converter = new DetectionResultConverter();
 
     /**
      * Perform detection to all frames in <code>lblFile</code> using <code>detector</code> and save the results to a XML

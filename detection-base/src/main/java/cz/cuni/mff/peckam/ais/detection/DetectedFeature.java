@@ -66,4 +66,9 @@ public interface DetectedFeature
      * @param type The type to add.
      */
     void addType(String type);
+
+    /**
+     * @return The unique ID of the feature.
+     */
+    String getId();
 }

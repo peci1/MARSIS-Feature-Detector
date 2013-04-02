@@ -35,7 +35,7 @@ package cz.cuni.mff.peckam.ais.detection;
  * 
  * @author Martin Pecka
  */
-public class Line extends DetectedFeatureBase
+public abstract class Line extends DetectedFeatureBase
 {
 
     /** The direction of the line. */

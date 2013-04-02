@@ -30,58 +30,30 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.Point;
 
 /**
- * Result of feature detection.
+ * Ground echo.
  * 
  * @author Martin Pecka
  */
-public class DetectionResult
+public class GroundEcho extends GeneralCurve
 {
-    /** The detected features. */
-    private final Map<String, DetectedFeature> features = new HashMap<>();
+    /** Id of the feature. */
+    public static final String ID = "groundEcho";
 
     /**
-     * @param features The features to add.
+     * @param points The points of the echo.
      */
-    public DetectionResult(DetectedFeature... features)
+    public GroundEcho(Point... points)
     {
-        if (features != null) {
-            for (DetectedFeature feature : features) {
-                addFeature(feature);
-            }
-        }
+        super(points);
     }
 
-    /**
-     * Add the given feature to the result.
-     * 
-     * @param feature The feature to add.
-     */
-    public void addFeature(DetectedFeature feature)
+    @Override
+    public String getId()
     {
-        features.put(feature.getId(), feature);
+        return ID;
     }
 
-    /**
-     * @return The detected features.
-     */
-    public Collection<DetectedFeature> getFeatures()
-    {
-        return features.values();
-    }
-
-    /**
-     * Return the feature with the given ID or <code>null</code> if no such feature is found.
-     * 
-     * @param id Unique ID of the feature.
-     * @return The feature or <code>null</code> if it is not found.
-     */
-    public DetectedFeature getFeature(String id)
-    {
-        return features.get(id);
-    }
 }

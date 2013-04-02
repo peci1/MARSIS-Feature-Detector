@@ -30,58 +30,31 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * Result of feature detection.
+ * Electron cyclotron echoes.
  * 
  * @author Martin Pecka
  */
-public class DetectionResult
+public class ElectronCyclotronEchoes extends RepeatingLine
 {
-    /** The detected features. */
-    private final Map<String, DetectedFeature> features = new HashMap<>();
 
     /**
-     * @param features The features to add.
+     * @param offset Offset of the first repeat along the vertical axis.
+     * @param period The repetition period.
+     * @param end Offset of the end along the horizontal axis.
      */
-    public DetectionResult(DetectedFeature... features)
+    public ElectronCyclotronEchoes(int offset, double period, int end)
     {
-        if (features != null) {
-            for (DetectedFeature feature : features) {
-                addFeature(feature);
-            }
-        }
+        super(Direction.HORIZONTAL, offset, period, 0, end);
     }
 
-    /**
-     * Add the given feature to the result.
-     * 
-     * @param feature The feature to add.
-     */
-    public void addFeature(DetectedFeature feature)
+    /** Unique ID of the feature. */
+    public static final String ID = "electronCyclotronEchoes";
+
+    @Override
+    public String getId()
     {
-        features.put(feature.getId(), feature);
+        return ID;
     }
 
-    /**
-     * @return The detected features.
-     */
-    public Collection<DetectedFeature> getFeatures()
-    {
-        return features.values();
-    }
-
-    /**
-     * Return the feature with the given ID or <code>null</code> if no such feature is found.
-     * 
-     * @param id Unique ID of the feature.
-     * @return The feature or <code>null</code> if it is not found.
-     */
-    public DetectedFeature getFeature(String id)
-    {
-        return features.get(id);
-    }
 }

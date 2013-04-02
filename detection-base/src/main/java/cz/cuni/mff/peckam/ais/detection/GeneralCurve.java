@@ -37,7 +37,7 @@ import java.awt.Point;
  * 
  * @author Martin Pecka
  */
-public class GeneralCurve extends DetectedFeatureBase
+public abstract class GeneralCurve extends DetectedFeatureBase
 {
     /** The points this curve consists of. */
     private final Point[] points;

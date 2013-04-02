@@ -35,7 +35,7 @@ package cz.cuni.mff.peckam.ais.detection;
  * 
  * @author Martin Pecka
  */
-public class RepeatingLine extends DetectedFeatureBase
+public abstract class RepeatingLine extends DetectedFeatureBase
 {
 
     /** The direction of the lines. */
