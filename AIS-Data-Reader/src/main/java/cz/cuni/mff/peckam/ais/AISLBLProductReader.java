@@ -39,6 +39,9 @@ import java.util.Map;
 
 import org.joda.time.DateTime;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+
 import cz.cuni.mff.peckam.ais.result.FrameType;
 import cz.cuni.mff.peckam.ais.result.Orbit;
 import cz.cuni.mff.peckam.ais.result.ResultReader;
@@ -59,6 +62,10 @@ public class AISLBLProductReader
     /** Overlay type defining automatically obtained data. */
     public static final String OVERLAY_TYPE_AUTOMATIC = "automatic";
 
+    /** Cache for loaded ionograms. */
+    private static final Cache<File, Ionogram[]> ionogramCache          = CacheBuilder.newBuilder().softValues()
+                                                                                .build();
+
     /**
      * Read {@link Ionogram}s from the given file.
      * 
@@ -69,6 +76,12 @@ public class AISLBLProductReader
      */
     public Ionogram[] readFile(File lblFile) throws IOException
     {
+        {
+            final Ionogram[] cachedResult = ionogramCache.getIfPresent(lblFile);
+            if (cachedResult != null)
+                return cachedResult;
+        }
+
         final Map<String, String> entries = new HashMap<>();
 
         try (final BufferedReader reader = new BufferedReader(new FileReader(lblFile))) {
@@ -141,6 +154,9 @@ public class AISLBLProductReader
                 }
             }
         }
+
+        // TODO resolve memory problems
+        // ionogramCache.put(lblFile, result);
 
         return result;
     }

@@ -135,6 +135,7 @@ public class EvenlySampledIonogram extends Ionogram
                     .getOverlays()) {
                 addOverlay(overlay);
             }
+            setReferenceDetectionResult(original.getReferenceDetectionResult());
         }
     }
 

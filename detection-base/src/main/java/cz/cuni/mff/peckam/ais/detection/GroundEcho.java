@@ -56,4 +56,10 @@ public class GroundEcho extends GeneralCurve
         return ID;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("Ground echo from %d to %d with %d points", getPoints()[0].x,
+                getPoints()[getPoints().length - 1].x, getPoints().length);
+    }
 }

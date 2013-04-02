@@ -30,6 +30,7 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import java.awt.Dimension;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,11 +45,21 @@ public class DetectionResult
     /** The detected features. */
     private final Map<String, DetectedFeature> features = new HashMap<>();
 
+    /** Id of the source product. */
+    private final Object                       sourceProductId;
+
+    /** The size of the source product. */
+    private final Dimension                    sourceProductSize;
+
     /**
+     * @param sourceProductId Id of the source product.
+     * @param sourceProductSize The size of the source product.
      * @param features The features to add.
      */
-    public DetectionResult(DetectedFeature... features)
+    public DetectionResult(Object sourceProductId, Dimension sourceProductSize, DetectedFeature... features)
     {
+        this.sourceProductId = sourceProductId;
+        this.sourceProductSize = sourceProductSize;
         if (features != null) {
             for (DetectedFeature feature : features) {
                 addFeature(feature);
@@ -83,5 +94,41 @@ public class DetectionResult
     public DetectedFeature getFeature(String id)
     {
         return features.get(id);
+    }
+
+    /**
+     * @return Id of the source product.
+     */
+    public Object getSourceProductId()
+    {
+        return sourceProductId;
+    }
+
+    /**
+     * @return The size of the source product.
+     */
+    public Dimension getSourceProductSize()
+    {
+        return sourceProductSize;
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(getSourceProductId());
+
+        if (!features.isEmpty()) {
+            String separator = ": ";
+            for (DetectedFeature feature : features.values()) {
+                builder.append(separator).append(feature.toString());
+                separator = ", ";
+            }
+        } else {
+            builder.append(": no features");
+        }
+
+        return builder.toString();
     }
 }

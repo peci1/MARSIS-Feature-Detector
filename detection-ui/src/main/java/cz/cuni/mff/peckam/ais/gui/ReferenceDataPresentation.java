@@ -30,9 +30,13 @@
  */
 package cz.cuni.mff.peckam.ais.gui;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.cuni.mff.peckam.ais.AISLBLProductReader;
+import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
 import cz.cuni.mff.peckam.ais.Product;
 import cz.cuni.mff.peckam.ais.detection.DetectionResult;
@@ -50,6 +54,9 @@ public class ReferenceDataPresentation extends DetectorPresentation<ReferenceDat
 
     /**  */
     private static final long serialVersionUID = 8567678517660575613L;
+
+    /** The ionogram reader to be used. */
+    private final AISLBLProductReader reader           = new AISLBLProductReader();
 
     @Override
     public void updateComponentStates()
@@ -76,6 +83,21 @@ public class ReferenceDataPresentation extends DetectorPresentation<ReferenceDat
         return null;
     }
 
+    @Override
+    protected List<DetectionResult> detectFeatures(File orbitFile) throws IOException
+    {
+        final Ionogram[] ionograms = reader.readFile(orbitFile);
+        for (int i = 0; i < ionograms.length; i++) {
+            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+        }
+
+        final List<DetectionResult> results = new LinkedList<>();
+        for (Ionogram ionogram : ionograms)
+            results.add(getDetector().detectFeatures(ionogram));
+
+        return results;
+    }
+
     /**
      * A dummy detector for the presentation.
      * 
@@ -89,7 +111,7 @@ public class ReferenceDataPresentation extends DetectorPresentation<ReferenceDat
         {
             final Ionogram ionogram = (Ionogram) product;
             final FrameType referenceResult = ionogram.getReferenceDetectionResult();
-            return new DetectionResultConverter().convert(referenceResult, ionogram);
+            return DetectionResultConverter.convert(referenceResult, ionogram);
         }
 
         @Override

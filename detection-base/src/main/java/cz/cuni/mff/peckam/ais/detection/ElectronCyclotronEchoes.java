@@ -57,4 +57,10 @@ public class ElectronCyclotronEchoes extends RepeatingLine
         return ID;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("vPeriod=%.3f", getPeriod());
+    }
+
 }

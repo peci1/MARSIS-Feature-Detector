@@ -30,6 +30,7 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import java.awt.Dimension;
 import java.awt.Point;
 import java.util.List;
 
@@ -47,7 +48,7 @@ import cz.cuni.mff.peckam.ais.result.TraceType;
 public class DetectionResultConverter
 {
     /** Object factory for the {@link FrameType}. */
-    private final ObjectFactory factory = new ObjectFactory();
+    private static final ObjectFactory factory = new ObjectFactory();
 
     /**
      * Convert the given detection result (performed on the given product) to a FrameType.
@@ -57,10 +58,13 @@ public class DetectionResultConverter
      * 
      * @return The corresponding FrameType.
      */
-    public FrameType convert(DetectionResult result, Ionogram ionogram)
+    public static FrameType convert(DetectionResult result, Ionogram ionogram)
     {
         final FrameType frame = factory.createFrameType();
         frame.setTime(ionogram.getStartTime());
+
+        if (result == null)
+            return frame;
 
         final float horizScale = (ionogram.getMaxColumnValue() - ionogram.getMinColumnValue()) / (ionogram.getWidth());
         final float vertScale = (ionogram.getMaxRowValue() - ionogram.getMinRowValue()) / (ionogram.getHeight());
@@ -95,9 +99,13 @@ public class DetectionResultConverter
      * @param ionogram The ionogram supplying metadata.
      * @return The detection result.
      */
-    public DetectionResult convert(FrameType frame, Ionogram ionogram)
+    public static DetectionResult convert(FrameType frame, Ionogram ionogram)
     {
-        final DetectionResult result = new DetectionResult();
+        if (frame == null)
+            return null;
+
+        final DetectionResult result = new DetectionResult(ionogram.getId(), new Dimension(ionogram.getWidth(),
+                ionogram.getHeight()));
 
         final float horizScale = ionogram.getWidth() / (ionogram.getMaxColumnValue() - ionogram.getMinColumnValue());
         final float vertScale = ionogram.getHeight() / (ionogram.getMaxRowValue() - ionogram.getMinRowValue());
@@ -148,7 +156,7 @@ public class DetectionResultConverter
      * 
      * @return The trace.
      */
-    private TraceType getTrace(Point[] points, float minX, float xScale, float minY, float yScale)
+    private static TraceType getTrace(Point[] points, float minX, float xScale, float minY, float yScale)
     {
         final TraceType trace = factory.createTraceType();
         for (Point point : points) {
@@ -171,7 +179,8 @@ public class DetectionResultConverter
      * 
      * @return The converted points.
      */
-    private Point[] framePointsToResultPoints(List<PointType> points, float minX, float xScale, float minY, float yScale)
+    private static Point[] framePointsToResultPoints(List<PointType> points, float minX, float xScale, float minY,
+            float yScale)
     {
         final Point[] result = new Point[points.size()];
         int i = 0;

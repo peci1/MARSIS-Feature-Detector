@@ -30,6 +30,7 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import java.awt.Dimension;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -47,7 +48,7 @@ public class SummingDetector implements FeatureDetector<Float>
     public DetectionResult detectFeatures(Product<Float, ?, ?> product)
     {
         // TODO
-        return new DetectionResult();
+        return new DetectionResult(product.getId(), new Dimension(product.getWidth(), product.getHeight()));
     }
 
     @Override

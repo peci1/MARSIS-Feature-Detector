@@ -95,11 +95,11 @@ public class DetectionFrame
     /** Button to start detection. */
     private JButton     btnDetect;
 
-    /** Tabbed pane for the particular detector presntations. */
+    /** Tabbed pane for the particular detector presentations. */
     private JTabbedPane tabbedPane;
 
     /**
-     * The folder containing the fodlers with orbit data. <code>null</code> if the folder selected in {@link #fileInput}
+     * The folder containing the folders with orbit data. <code>null</code> if the folder selected in {@link #fileInput}
      * is invalid.
      */
     private File               baseFolder = null;
@@ -381,18 +381,20 @@ public class DetectionFrame
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                final Integer start = (Integer) startOrbit.getSelectedItem();
+                final Integer end = (Integer) endOrbit.getSelectedItem();
+                if (start == null || end == null)
+                    return;
+
                 detectionInProgress = true;
                 updateComponentStates();
+
+                detectorPresentations.get(tabbedPane.getSelectedIndex()).reset();
 
                 new SwingWorker<Void, Void>() {
                     @Override
                     protected Void doInBackground() throws Exception
                     {
-                        final Integer start = (Integer) startOrbit.getSelectedItem();
-                        final Integer end = (Integer) endOrbit.getSelectedItem();
-                        if (start == null || end == null)
-                            return null;
-
                         final Collection<File> files = orbitNumToOrbitFile.subMap(start, end + 1).values();
                         detectorPresentations.get(tabbedPane.getSelectedIndex()).detectFeatures(files);
 

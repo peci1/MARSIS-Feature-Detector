@@ -57,4 +57,10 @@ public class ElectronPlasmaOscillation extends RepeatingLine
         return ID;
     }
 
+    @Override
+    public String toString()
+    {
+        return String.format("hPeriod=%.3f", getPeriod());
+    }
+
 }

@@ -39,8 +39,8 @@ import java.util.List;
 import java.util.Locale;
 
 import cz.cuni.mff.peckam.ais.AISLBLProductReader;
+import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
-import cz.cuni.mff.peckam.ais.result.FrameType;
 import cz.cuni.mff.peckam.ais.result.ObjectFactory;
 import cz.cuni.mff.peckam.ais.result.Orbit;
 import cz.cuni.mff.peckam.ais.result.ResultWriter;
@@ -59,9 +59,6 @@ public class DetectAndSave
     /** Object factory for {@link Orbit}. */
     private static final ObjectFactory                   factory   = new ObjectFactory();
 
-    /** Converts {@link DetectionResult}s to {@link FrameType}s. */
-    private static final DetectionResultConverter converter = new DetectionResultConverter();
-
     /**
      * Perform detection to all frames in <code>lblFile</code> using <code>detector</code> and save the results to a XML
      * file named TRACE_<code>resultSuffix</code>.XML in the same directory as <code>lblFile</code>.
@@ -77,6 +74,9 @@ public class DetectAndSave
             throws IOException
     {
         final Ionogram[] ionograms = reader.readFile(lblFile);
+        for (int i = 0; i < ionograms.length; i++) {
+            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+        }
 
         final Orbit orbit = factory.createOrbit();
         final int orbitNum = ionograms[0].getOrbitNumber();
@@ -87,7 +87,7 @@ public class DetectAndSave
         for (Ionogram ionogram : ionograms) {
             final DetectionResult result = detector.detectFeatures(ionogram);
             results.add(result);
-            orbit.getFrames().add(converter.convert(result, ionogram));
+            orbit.getFrames().add(DetectionResultConverter.convert(result, ionogram));
         }
 
         final String outFileName = String.format(Locale.ENGLISH, "TRACE_%04d_%s.XML", orbitNum, resultSuffix);
