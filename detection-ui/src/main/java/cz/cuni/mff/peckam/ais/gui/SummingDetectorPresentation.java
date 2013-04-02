@@ -28,34 +28,44 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package cz.cuni.mff.peckam.ais.detection;
+package cz.cuni.mff.peckam.ais.gui;
 
-import java.util.List;
-
-import cz.cuni.mff.peckam.ais.Product;
+import cz.cuni.mff.peckam.ais.detection.SummingDetector;
 
 /**
- * A detector of features in 2D products.
+ * Presentation for the {@link SummingDetector}.
  * 
  * @author Martin Pecka
- * 
- * @param <ProductDataType> Type of the data in product.
  */
-public interface FeatureDetector<ProductDataType extends Number>
+public class SummingDetectorPresentation extends DetectorPresentation<SummingDetector>
 {
-    /**
-     * Detect features in the given data product.
-     * 
-     * @param product The product to detect features in.
-     * @return All detected features.
-     */
-    DetectionResult detectFeatures(Product<ProductDataType, ?, ?> product);
 
-    /**
-     * Detect features in the given data products.
-     * 
-     * @param products The products to detect features in.
-     * @return All detected features.
-     */
-    List<DetectionResult> detectFeatures(List<? extends Product<ProductDataType, ?, ?>> products);
+    /**  */
+    private static final long serialVersionUID = -2472019239328249370L;
+
+    @Override
+    public void updateComponentStates()
+    {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getTabTitle()
+    {
+        return "Row/col summing";
+    }
+
+    @Override
+    protected SummingDetector createDetector()
+    {
+        return new SummingDetector();
+    }
+
+    @Override
+    protected String getResultFileSuffix()
+    {
+        return "SUM";
+    }
+
 }

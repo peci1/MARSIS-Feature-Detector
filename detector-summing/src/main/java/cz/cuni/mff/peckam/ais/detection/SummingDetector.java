@@ -30,32 +30,34 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import cz.cuni.mff.peckam.ais.Product;
 
 /**
- * A detector of features in 2D products.
+ * Detector using sums of rows/columns.
  * 
  * @author Martin Pecka
- * 
- * @param <ProductDataType> Type of the data in product.
  */
-public interface FeatureDetector<ProductDataType extends Number>
+public class SummingDetector implements FeatureDetector<Float>
 {
-    /**
-     * Detect features in the given data product.
-     * 
-     * @param product The product to detect features in.
-     * @return All detected features.
-     */
-    DetectionResult detectFeatures(Product<ProductDataType, ?, ?> product);
 
-    /**
-     * Detect features in the given data products.
-     * 
-     * @param products The products to detect features in.
-     * @return All detected features.
-     */
-    List<DetectionResult> detectFeatures(List<? extends Product<ProductDataType, ?, ?>> products);
+    @Override
+    public DetectionResult detectFeatures(Product<Float, ?, ?> product)
+    {
+        // TODO
+        return new DetectionResult();
+    }
+
+    @Override
+    public List<DetectionResult> detectFeatures(List<? extends Product<Float, ?, ?>> products)
+    {
+        final List<DetectionResult> result = new LinkedList<>();
+
+        for (Product<Float, ?, ?> product : products)
+            result.add(detectFeatures(product));
+
+        return result;
+    }
 }
