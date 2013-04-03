@@ -45,6 +45,39 @@ import cz.cuni.mff.peckam.ais.result.FrameType;
  */
 public class Ionogram implements Product<Float, Float, Float>
 {
+    /** The minimum value of a ionogram. */
+    public static final double                                                                  MIN_VALUE                = 10E-17;
+
+    /** The minimum value of a ionogram. */
+    public static final double                                                                  MAX_VALUE                = 10E-9;
+
+    // frequency table at http://www-pw.physics.uiowa.edu/plasma-wave/marsx/restricted/super/DOCUMENT/AIS_FREQ_TABLE.TXT
+
+    /** The maximum frequency in MHz. */
+    public static final double                                                                  MIN_FREQUENCY            = 100000 / 1E6;
+
+    /** The maximum frequency in MHz. */
+    public static final double                                                                  MAX_FREQUENCY            = 5500000 / 1E6;
+
+    /** Range of the allowed frequencies in MHz. */
+    public static final double                                                                  FREQUENCY_RANGE          = MAX_FREQUENCY
+                                                                                                                                 - MIN_FREQUENCY;
+
+    /** The number of frequencies used for sounding. */
+    public static final int                                                                     NUM_FREQUENCY_BINS       = 160;
+
+    /** The minimum delay time in ms. */
+    public static final double                                                                  MIN_DELAY_TIME           = 253.92856999999998 / 1E3;
+
+    /** The maximum delay time in ms. */
+    public static final double                                                                  MAX_DELAY_TIME           = 7568.21416999999942 / 1E3;
+
+    /** Width of one time delay measuring bin. */
+    public static final double                                                                  DELAY_TIME_BIN_WIDTH     = 91.428569999999993 / 1E3;
+
+    /** The number of time delay measuring bins. */
+    public static final int                                                                     NUM_TIME_DELAY_BINS      = 80;
+
     /** The data columns. */
     private final AISProduct[] columns;
 
@@ -61,16 +94,10 @@ public class Ionogram implements Product<Float, Float, Float>
     private final DateTime     startTime;
 
     /** The data. */
-    private final Float[][]    data;
+    private Float[][]                                                                           data;
 
     /** Keys - the column frequencies. */
     private final Float[]        columnKeys;
-
-    /** The minimal column value. */
-    private final float                                                                         minColumnValue;
-
-    /** The maximal column value. */
-    private final float                                                                         maxColumnValue;
 
     /** The overlays. */
     private final List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> overlays = new LinkedList<>();
@@ -93,14 +120,11 @@ public class Ionogram implements Product<Float, Float, Float>
         this.columnKeys = new Float[this.columns.length];
         for (int i = 0; i < data.length; i++) {
             data[i] = this.columns[i].getData()[0];
-            columnKeys[i] = this.columns[i].getFrequency() / 1E6f;
+            columnKeys[i] = this.columns[i].getFrequency();
         }
 
         this.frequencyTableNumber = columns[0].getFrequencyTableNumber();
         this.startTime = columns[0].getSpaceCraftClock();
-
-        this.minColumnValue = columnKeys[0];
-        this.maxColumnValue = columnKeys[columnKeys.length - 1];
     }
 
     /**
@@ -115,6 +139,14 @@ public class Ionogram implements Product<Float, Float, Float>
     public Float[][] getData()
     {
         return data;
+    }
+
+    /**
+     * @param data The new data array.
+     */
+    protected void setData(Float[][] data)
+    {
+        this.data = data;
     }
 
     @Override
@@ -195,41 +227,41 @@ public class Ionogram implements Product<Float, Float, Float>
     /**
      * @return The minimal column value.
      */
-    public float getMinColumnValue()
+    public double getMinColumnValue()
     {
-        return minColumnValue;
+        return MIN_FREQUENCY;
     }
 
     /**
      * @return The maximal column value.
      */
-    public float getMaxColumnValue()
+    public double getMaxColumnValue()
     {
-        return maxColumnValue;
+        return MAX_FREQUENCY;
     }
 
     /**
      * @return The height of a row.
      */
-    public float getRowHeight()
+    public double getRowHeight()
     {
-        return columns[0].getRowHeight();
+        return DELAY_TIME_BIN_WIDTH;
     }
 
     /**
      * @return The minimal row value.
      */
-    public float getMinRowValue()
+    public double getMinRowValue()
     {
-        return columns[0].getMinRowValue();
+        return MIN_DELAY_TIME;
     }
 
     /**
      * @return The maximal row value.
      */
-    public float getMaxRowValue()
+    public double getMaxRowValue()
     {
-        return columns[0].getMaxRowValue();
+        return MAX_DELAY_TIME;
     }
 
     @Override

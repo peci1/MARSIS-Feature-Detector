@@ -81,6 +81,8 @@ public class AISFrame
 
     /** The product sets to display. */
     private Ionogram[]    ionograms = null;
+    /** The product sets to display evenized. */
+    private Ionogram[]         evenIonograms = null;
 
     /** Configuration. */
     private final Properties   props       = new Properties();
@@ -149,6 +151,7 @@ public class AISFrame
                 renderer.setLoadingText("Loading the .LBL file...");
 
                 ionograms = null;
+                evenIonograms = null;
 
                 new SwingWorker<Ionogram[], Void>() {
                     @Override
@@ -162,11 +165,6 @@ public class AISFrame
                             Ionogram[] ionograms = new AISLBLProductReader().readFile(new File(path));
 
                             props.setProperty("defaultFile", path);
-
-                            if (evenSamplesCheckBox.isSelected()) {
-                                for (int i = 0; i < ionograms.length; i++)
-                                    ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
-                            }
 
                             return ionograms;
                         } catch (IOException | IllegalStateException e1) {
@@ -184,6 +182,7 @@ public class AISFrame
                     {
                         try {
                             ionograms = get();
+                            evenIonograms = new Ionogram[ionograms.length];
 
                             if (ionograms != null) {
                                 final int oldIndex = positionInSeriesComboBox.getSelectedIndex();
@@ -236,17 +235,35 @@ public class AISFrame
             }
         });
 
-        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>(10E-18f, 10E-9f);
+        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>((float) Ionogram.MIN_VALUE / 30f,
+                (float) Ionogram.MAX_VALUE);
         positionInSeriesComboBox.addActionListener(new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                renderer.setProductAndColorScale(ionograms[(int) positionInSeriesComboBox.getSelectedItem()],
+                renderer.setProductAndColorScale(getIonogram((int) positionInSeriesComboBox.getSelectedItem()),
                         colorScale);
                 updateSetMetadataLabel();
             }
         });
+    }
+
+    /**
+     * Return the ionogram corresponding to the given position.
+     * 
+     * @param positionInSeries The position of the ionogram in the orbit frames list.
+     * @return The ionogram.
+     */
+    private Ionogram getIonogram(int positionInSeries)
+    {
+        if (!evenSamplesCheckBox.isSelected()) {
+            return ionograms[positionInSeries];
+        } else {
+            if (evenIonograms[positionInSeries] == null)
+                evenIonograms[positionInSeries] = new EvenlySampledIonogram(ionograms[positionInSeries]);
+            return evenIonograms[positionInSeries];
+        }
     }
 
     /**

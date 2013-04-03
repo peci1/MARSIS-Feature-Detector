@@ -54,7 +54,7 @@ import cz.cuni.mff.peckam.ais.result.ResultReader;
 public class AISLBLProductReader
 {
     /** Number of columns each ionogram contains. */
-    private static final int NUM_COLUMNS = 160;
+    private static final int                     NUM_COLUMNS            = Ionogram.NUM_FREQUENCY_BINS;
 
     /** Overlay type defining manually obtained data. */
     public static final String OVERLAY_TYPE_MANUAL    = "manual";

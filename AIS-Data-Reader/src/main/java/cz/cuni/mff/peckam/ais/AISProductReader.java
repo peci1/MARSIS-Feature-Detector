@@ -48,7 +48,7 @@ import org.joda.time.DateTime;
 public class AISProductReader
 {
     /** Number of items of the spectral density array. */
-    private static final int NUM_DENSITY_ITEMS = 80;
+    private static final int NUM_DENSITY_ITEMS = Ionogram.NUM_TIME_DELAY_BINS;
     /** Size of one record in bytes. */
     private static final int AIS_RECORD_SIZE = 400;
 

@@ -30,35 +30,124 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
-import java.awt.Dimension;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.cuni.mff.peckam.ais.AISLBLProductReader;
+import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
+import cz.cuni.mff.peckam.ais.Ionogram;
 import cz.cuni.mff.peckam.ais.Product;
+import cz.cuni.mff.peckam.ais.Tuple;
 
 /**
  * Detector using sums of rows/columns.
  * 
  * @author Martin Pecka
  */
-public class SummingDetector implements FeatureDetector<Float>
+public class SummingDetector extends FeatureDetectorBase<Float>
 {
 
     @Override
-    public DetectionResult detectFeatures(Product<Float, ?, ?> product)
+    protected List<DetectedFeature> detectFeaturesImpl(Product<Float, ?, ?> product)
     {
-        // TODO
-        return new DetectionResult(product.getId(), new Dimension(product.getWidth(), product.getHeight()));
-    }
+        final List<DetectedFeature> result = new LinkedList<>();
 
-    @Override
-    public List<DetectionResult> detectFeatures(List<? extends Product<Float, ?, ?>> products)
-    {
-        final List<DetectionResult> result = new LinkedList<>();
+        {
+            final Tuple<Integer, Double> horizRepeat = detectRepetition(getColumnSums(product));
+            if (horizRepeat != null) {
+                result.add(new ElectronPlasmaOscillation(horizRepeat.getX(), horizRepeat.getY(), 8));
+            }
+        }
 
-        for (Product<Float, ?, ?> product : products)
-            result.add(detectFeatures(product));
+        {
+            final Tuple<Integer, Double> vertRepeat = detectRepetition(getRowSums(product));
+            if (vertRepeat != null) {
+                result.add(new ElectronCyclotronEchoes(vertRepeat.getX(), vertRepeat.getY(), 8));
+            }
+        }
 
         return result;
+    }
+
+    /**
+     * Detect repetition in the given row/column sums.
+     * 
+     * @param sums The row/column sums.
+     * 
+     * @return <code>null</code> if no pattern has been found. Otherwise, the first entry in the tuple means offset,
+     *         while the other entry means period of repetition.
+     */
+    private Tuple<Integer, Double> detectRepetition(float[] sums)
+    {
+        return null; // TODO
+    }
+
+    /**
+     * Return the row sums of the given product.
+     * 
+     * @param product The product to sum up.
+     * @return The row sums
+     */
+    private float[] getRowSums(Product<Float, ?, ?> product)
+    {
+        final int w = product.getWidth(), h = product.getHeight();
+
+        final float[] result = new float[h];
+        final Float[][] data = product.getData();
+
+        for (int y = 0; y < h; y++) {
+            float sum = 0;
+            for (int x = 0; x < w; x++) {
+                sum += data[x][y];
+            }
+            result[y] = sum;
+        }
+
+        System.err.println(Arrays.toString(result));
+        return result;
+    }
+
+    /**
+     * Return the column sums of the given product.
+     * 
+     * @param product The product to sum up.
+     * @return The column sums
+     */
+    private float[] getColumnSums(Product<Float, ?, ?> product)
+    {
+        final int w = product.getWidth(), h = product.getHeight();
+
+        final float[] result = new float[w];
+        final Float[][] data = product.getData();
+
+        for (int x = 0; x < w; x++) {
+            float sum = 0;
+            for (int y = 0; y < h; y++) {
+                sum += data[x][y];
+            }
+            result[x] = sum;
+        }
+
+        System.err.println(Arrays.toString(result));
+        return result;
+    }
+
+    /**
+     * Test the detector on the given ionogram.
+     * 
+     * @param args 0 =&gt; Orbit file, 1 =&gt; position of the ionogram in the file.
+     * 
+     * @throws IOException On IO exception.
+     */
+    public static void main(String[] args) throws IOException
+    {
+        final File orbitFile = new File(args[0]);
+        final int position = Integer.parseInt(args[1]);
+
+        final Ionogram ionogram = new EvenlySampledIonogram(new AISLBLProductReader().readFile(orbitFile)[position]);
+        System.out.println(new SummingDetector().detectFeatures(ionogram));
     }
 }

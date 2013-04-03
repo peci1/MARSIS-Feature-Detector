@@ -67,21 +67,20 @@ public class AISProduct implements Product<Float, Void, Float>
     private Float[][] spectralDensity;
 
     /** The row keys. */
-    private final static Float[] rowKeys           = new Float[80];
+    private final static Float[] rowKeys           = new Float[Ionogram.NUM_TIME_DELAY_BINS];
 
     /** The width of one time delay bin. */
-    private final static float   timeDelayBinWidth = 0.0914f;
+    private final static double  timeDelayBinWidth = Ionogram.DELAY_TIME_BIN_WIDTH;
 
     /** The minimal row value. */
-    private final static float   minRowValue       = 0.1625f;
+    private final static double  minRowValue       = Ionogram.MIN_DELAY_TIME;
 
     /** The maximal row value. */
-    private final static float   maxRowValue       = minRowValue + (79 * timeDelayBinWidth);
+    private final static double  maxRowValue       = Ionogram.MAX_DELAY_TIME;
 
     static {
-        rowKeys[0] = minRowValue;
-        for (int i = 1; i < rowKeys.length; i++) {
-            rowKeys[i] = rowKeys[i - 1] + timeDelayBinWidth;
+        for (int i = 0; i < rowKeys.length; i++) {
+            rowKeys[i] = (float) (minRowValue + i * timeDelayBinWidth);
         }
     }
 
@@ -95,7 +94,7 @@ public class AISProduct implements Product<Float, Void, Float>
      * @param frequencyNumber Frequency number.
      * @param bandNumber Band number.
      * @param receiverAttenuation Receiver attenuation.
-     * @param frequency Frequency.
+     * @param frequency Frequency in Hz.
      * @param spectralDensity The data
      */
     AISProduct(DateTime spaceCraftClock, byte processId, byte instrumentDataType, byte instrumentSelectionMode,
@@ -111,7 +110,7 @@ public class AISProduct implements Product<Float, Void, Float>
         this.frequencyNumber = frequencyNumber;
         this.bandNumber = bandNumber;
         this.receiverAttenuation = receiverAttenuation;
-        this.frequency = frequency;
+        this.frequency = frequency / 1E6f;
         this.spectralDensity = spectralDensity;
     }
 
@@ -327,7 +326,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * The frequency of the transmit pulse.
      * 
-     * @return The frequency in Hz.
+     * @return The frequency in MHz.
      */
     public float getFrequency()
     {
@@ -355,7 +354,7 @@ public class AISProduct implements Product<Float, Void, Float>
     {
         final StringBuilder builder = new StringBuilder("AIS record for time ").append(getSpaceCraftClock()).append(
                 " : \n");
-        builder.append("\tTransmit frequency: ").append(getFrequency()).append("Hz (table nr. ")
+        builder.append("\tTransmit frequency: ").append(getFrequency()).append("MHz (table nr. ")
                 .append(getFrequencyTableNumber()).append(", freq nr. ").append(getFrequencyNumber()).append(")\n");
         builder.append("\tBand number: ").append(getBandNumber()).append("\n");
         builder.append("\tReceiver attenuation: ").append(getReceiverAttenuation()).append(" dB\n");
@@ -406,7 +405,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * @return The minimal row value.
      */
-    protected float getMinRowValue()
+    protected double getMinRowValue()
     {
         return minRowValue;
     }
@@ -414,7 +413,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * @return The maximal row value.
      */
-    protected float getMaxRowValue()
+    protected double getMaxRowValue()
     {
         return maxRowValue;
     }
@@ -422,7 +421,7 @@ public class AISProduct implements Product<Float, Void, Float>
     /**
      * @return The height of one row.
      */
-    protected float getRowHeight()
+    protected double getRowHeight()
     {
         return timeDelayBinWidth;
     }

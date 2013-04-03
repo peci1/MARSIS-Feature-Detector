@@ -31,7 +31,6 @@
 package cz.cuni.mff.peckam.ais;
 
 import java.awt.Point;
-import java.util.Arrays;
 
 /**
  * A ionogram with the frequency (columns) evenly sampled.
@@ -44,28 +43,11 @@ import java.util.Arrays;
 public class EvenlySampledIonogram extends Ionogram
 {
 
-    // frequency table at http://www-pw.physics.uiowa.edu/plasma-wave/marsx/restricted/super/DOCUMENT/AIS_FREQ_TABLE.TXT
-
-    /** The maximum frequency. */
-    private static float    MIN_FREQUENCY   = 99500f;
-
-    /** The maximum frequency. */
-    private static float    MAX_FREQUENCY   = 5501800f;
-
-    /** Range of the allowed frequencies. */
-    private static float    FREQUENCY_RANGE = MAX_FREQUENCY - MIN_FREQUENCY;
-
     /** The maximum number of samples. */
     private static int      MAX_SAMPLES   = 1000;
 
-    /** The ionogram's data. */
-    private final Float[][] data;
-
     /** The columnKeys - frequencies. */
     private final Float[]   columnKeys;
-
-    /** The original ionogram. */
-    private final Ionogram  original;
 
     /**
      * @param original The original ionogram.
@@ -74,95 +56,276 @@ public class EvenlySampledIonogram extends Ionogram
     {
         super(original.getColumns(), original.getOrbitNumber(), original.getPositionInSeries());
 
-        this.original = original;
+        final int width = computeIdealNumOfFreqSamples(original);
+        final int height = width / 2; // to maintain aspect ratio from original
 
+        this.columnKeys = createColumnKeys(width);
+        resample(original, width, height);
+
+        for (ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> overlay : original.getOverlays()) {
+            addOverlay(overlay);
+        }
+        setReferenceDetectionResult(original.getReferenceDetectionResult());
+    }
+
+    /**
+     * Return the number of frequency samples needed for full-resolution resampling. The number has an upper limit in
+     * order not to go too high.
+     * 
+     * @param original The ionogram to compute this value for.
+     * @return The desired number of frequency samples.
+     */
+    private int computeIdealNumOfFreqSamples(Ionogram original)
+    {
         final AISProduct[] columns = original.getColumns();
         float minFreqDiff = Float.MAX_VALUE;
-        final float SMALLEST_VALUE = 0.00001f;
 
+        // we just wanna find the lowest frequency diff among all the given frequencies
         for (int i = 0; i < columns.length - 1; i++) {
             final float freqDiff = columns[i + 1].getFrequency() - columns[i].getFrequency();
-            if (freqDiff < minFreqDiff && freqDiff > SMALLEST_VALUE)
+            if (freqDiff < minFreqDiff)
                 minFreqDiff = freqDiff;
         }
 
         final int numSamplesFromFreq = (int) Math.ceil(FREQUENCY_RANGE / minFreqDiff);
-        final int numSamples = Math.min(numSamplesFromFreq, MAX_SAMPLES);
-
-        this.data = new Float[numSamples][columns[0].getHeight()];
-        for (int i = 0; i < data.length; i++) {
-            final Float[] column = new Float[columns[0].getHeight()];
-            Arrays.fill(column, 0f);
-            data[i] = column;
-        }
-
-        this.columnKeys = new Float[numSamples];
-
-        for (int sample = 0, col = 0; sample < data.length; sample++) {
-            final float sampleFreq = MIN_FREQUENCY + sample / (float) numSamples * FREQUENCY_RANGE;
-            this.columnKeys[sample] = sampleFreq / 1E6f;
-
-            while (col < columns.length - 1 && sampleFreq > columns[col + 1].getFrequency())
-                col++;
-
-            AISProduct prevColumn = null, nextColumn = null;
-            float prevFreq = 0f, nextFreq = 0f, freqDiff = 0f;
-
-            while (Math.abs(freqDiff) < SMALLEST_VALUE && col < columns.length - 1) {
-                prevColumn = columns[col];
-                nextColumn = columns[col + 1];
-
-                prevFreq = prevColumn.getFrequency();
-                nextFreq = nextColumn.getFrequency();
-                freqDiff = nextFreq - prevFreq;
-
-                if (Math.abs(freqDiff) < SMALLEST_VALUE)
-                    col++;
-            }
-
-            if (prevColumn == null || nextColumn == null)
-                continue;
-
-            final Float[] prevData = prevColumn.getData()[0];
-            final Float[] nextData = nextColumn.getData()[0];
-
-            final float sampleRatio = (sampleFreq - prevFreq) / freqDiff;
-            for (int j = 0; j < prevColumn.getHeight(); j++) {
-                this.data[sample][j] = sampleRatio * prevData[j] + (1 - sampleRatio) * nextData[j];
-            }
-
-            for (ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> overlay : original
-                    .getOverlays()) {
-                addOverlay(overlay);
-            }
-            setReferenceDetectionResult(original.getReferenceDetectionResult());
-        }
-    }
-
-    @Override
-    public Float[][] getData()
-    {
-        return data;
-    }
-
-    @Override
-    public int getWidth()
-    {
-        return data.length;
-    }
-
-    @Override
-    public int getHeight()
-    {
-        return data[0].length;
+        return Math.min(numSamplesFromFreq, MAX_SAMPLES);
     }
 
     /**
-     * @return The original unevenly sampled ionogram.
+     * Resample the original ionogram into this ionogram to a size given by the parameters.
+     * 
+     * @param original The (possibly unevenly scaled) original ionogram.
+     * @param width The desired width.
+     * @param height The desired height.
      */
-    public Ionogram getOriginal()
+    private void resample(Ionogram original, int width, int height)
     {
-        return original;
+        setData(null); // to allow garbage collection
+        System.gc();
+
+        final float[][] data = new float[width][height];
+        final float[][] weights = new float[width][height];
+        final Float[][] origData = original.getData();
+
+        final AISProduct[] cols = original.getColumns();
+        // take the best interpolated positions of the old pixels to new bins and copy values; save the number of
+        // original values in a new bin in the array weights
+        for (int f = 0; f < origData.length; f++) {
+            final int fBin = getFreqBin(cols[f].getFrequency(), width);
+            for (int t = 0; t < origData[f].length; t++) {
+                final int tBin = getTimeBin(t, height);
+                data[fBin][tBin] += origData[f][t];
+                weights[fBin][tBin] += 1;
+            }
+        }
+
+        // firstly we weigh the original data
+        for (int f = 0; f < width; f++) {
+            for (int t = 0; t < height; t++) {
+                if (weights[f][t] > 0) {
+                    data[f][t] /= weights[f][t];
+                }
+            }
+        }
+
+        resampleData(data, weights, width, height);
+
+        for (int f = 0; f < width; f++) {
+            for (int t = 0; t < height; t++) {
+                if (data[f][t] > 0)
+                    weights[f][t] = 1;
+            }
+        }
+
+        resampleData(data, weights, width, height);
+
+        final Float[][] newData = new Float[width][height];
+        for (int f = 0; f < width; f++) {
+            for (int t = 0; t < height; t++) {
+                newData[f][t] = data[f][t];
+            }
+        }
+        setData(newData);
+    }
+
+    /**
+     * Internal work.
+     * 
+     * @param data The data values.
+     * @param weights Their weights.
+     * @param width Width.
+     * @param height Height.
+     */
+    private void resampleData(float[][] data, float[][] weights, int width, int height)
+    {
+        // for every "newly blank" point we will need the positions of its nearest neighbors from the original data set;
+        // then we can interpolate correctly from these values
+
+        final int[][] nearestLeftValues = new int[width][height];
+        for (int t = 0; t < height; t++) {
+            nearestLeftValues[0][t] = -1;
+            for (int f = 1; f < width; f++) {
+                if (weights[f][t] > 0) {
+                    nearestLeftValues[f][t] = -1;
+                } else if (weights[f - 1][t] > 0) {
+                    nearestLeftValues[f][t] = f - 1;
+                } else {
+                    nearestLeftValues[f][t] = nearestLeftValues[f - 1][t];
+                }
+            }
+        }
+
+        final int[][] nearestRightValues = new int[width][height];
+        for (int t = 0; t < height; t++) {
+            nearestRightValues[width - 1][t] = -1;
+            for (int f = width - 2; f >= 0; f--) {
+                if (weights[f][t] > 0) {
+                    nearestRightValues[f][t] = -1;
+                } else if (weights[f + 1][t] > 0) {
+                    nearestRightValues[f][t] = f + 1;
+                } else {
+                    nearestRightValues[f][t] = nearestRightValues[f + 1][t];
+                }
+            }
+        }
+
+        final int[][] nearestTopValues = new int[width][height];
+        for (int f = 0; f < width; f++) {
+            nearestTopValues[f][0] = -1;
+            for (int t = 1; t < height; t++) {
+                if (weights[f][t] > 0) {
+                    nearestTopValues[f][t] = -1;
+                } else if (weights[f][t - 1] > 0) {
+                    nearestTopValues[f][t] = t - 1;
+                } else {
+                    nearestTopValues[f][t] = nearestTopValues[f][t - 1];
+                }
+            }
+        }
+
+        final int[][] nearestBottomValues = new int[width][height];
+        for (int f = 0; f < width; f++) {
+            nearestBottomValues[f][height - 1] = -1;
+            for (int t = height - 2; t >= 0; t--) {
+                if (weights[f][t] > 0) {
+                    nearestBottomValues[f][t] = -1;
+                } else if (weights[f][t + 1] > 0) {
+                    nearestBottomValues[f][t] = t + 1;
+                } else {
+                    nearestBottomValues[f][t] = nearestBottomValues[f][t + 1];
+                }
+            }
+        }
+
+        final int maxDecayBins = (int) (Math.ceil(width / (float) NUM_FREQUENCY_BINS) * 4);
+
+        for (int f = 0; f < width; f++) {
+            for (int t = 0; t < height; t++) {
+                if (weights[f][t] > 0) {
+                    // has already been done
+                } else {
+                    final int nlv = nearestLeftValues[f][t];
+                    final int nrv = nearestRightValues[f][t];
+                    float freqValue = 0;
+                    if (nlv != -1 && nrv != -1 && (f - nlv) <= maxDecayBins && (nrv - f) <= maxDecayBins) {
+                        final float left = (f - nlv) * weights[nlv][t];
+                        final float right = (nrv - f) * weights[nrv][t];
+                        final float leftPos = left / (left + right);
+                        freqValue = data[nlv][t] * leftPos + data[nrv][t] * (1 - leftPos);
+                    } else if (nlv != -1 && (f - nlv) <= maxDecayBins) {
+                        final float left = (f - nlv) * weights[nlv][t];
+                        final float right = nlv + maxDecayBins;
+                        final float leftPos = left / (left + right);
+                        freqValue = data[nlv][t] * leftPos;
+                    } else if (nrv != -1 && (nrv - f) <= maxDecayBins) {
+                        final float left = nrv - maxDecayBins;
+                        final float right = (nrv - f) * weights[nrv][t];
+                        final float leftPos = left / (left + right);
+                        freqValue = data[nrv][t] * (1 - leftPos);
+                    }
+
+                    final int ntv = nearestTopValues[f][t];
+                    final int nbv = nearestBottomValues[f][t];
+                    float timeValue = 0;
+                    if (ntv != -1 && nbv != -1 && (t - ntv) <= maxDecayBins && (nbv - t) <= maxDecayBins) {
+                        final float top = (t - ntv) * weights[f][ntv];
+                        final float bottom = (nbv - t) * weights[f][nbv];
+                        final float topPos = top / (top + bottom);
+                        timeValue = data[f][ntv] * topPos + data[f][nbv] * (1 - topPos);
+                    } else if (ntv != -1 && (t - ntv) <= maxDecayBins) {
+                        final float top = (t - ntv) * weights[f][ntv];
+                        final float bottom = ntv + maxDecayBins;
+                        final float topPos = top / (top + bottom);
+                        timeValue = data[f][ntv] * topPos;
+                    } else if (nbv != -1 && (nbv - t) <= maxDecayBins) {
+                        final float top = nbv - maxDecayBins;
+                        final float bottom = (nbv - t) * weights[f][nbv];
+                        final float topPos = top / (top + bottom);
+                        timeValue = data[f][nbv] * (1 - topPos);
+                    }
+
+                    data[f][t] = (freqValue + timeValue) / 2;
+                }
+            }
+        }
+    }
+
+    /**
+     * Return the best new frequency bin corresponding to the given frequency.
+     * 
+     * @param frequency The frequency to get bin for.
+     * @param numFreqBins The number of frequency bins to take into account.
+     * @return The new frequency bin - a number in interval &lt;0;numFreqBins-1&gt;
+     */
+    private int getFreqBin(float frequency, int numFreqBins)
+    {
+        return (int) interpolate(frequency, (float) MIN_FREQUENCY, (float) MAX_FREQUENCY, 0, numFreqBins - 1);
+    }
+
+    /**
+     * Return the best new time delay bin for the given old time delay bin after resizing to
+     * <code>numNewDelayBins</code> bins.
+     * 
+     * @param oldDelayBin The bin in old number of bins.
+     * @param numNewDelayBins The new number of bins.
+     * @return The new position of the bin.
+     */
+    private int getTimeBin(int oldDelayBin, int numNewDelayBins)
+    {
+        return (int) interpolate(oldDelayBin, 0, NUM_TIME_DELAY_BINS - 1, 0, numNewDelayBins - 1);
+    }
+
+    /**
+     * Interpolate <code>value</code> from interval <code>&lt;valueMin;valueMax&gt;</code> to
+     * <code>&lt;newMin;newMax&gt;</code>.
+     * 
+     * @param value The value to interpolate.
+     * @param valueMin Old min.
+     * @param valueMax Old max.
+     * @param newMin New min.
+     * @param newMax New max.
+     * @return The interpolated value.
+     */
+    private float interpolate(float value, float valueMin, float valueMax, float newMin, float newMax)
+    {
+        return newMin + (value - valueMin) / (valueMax - valueMin) * (newMax - newMin);
+    }
+
+    /**
+     * Return the interpolated column keys for the given width of ionogram.
+     * 
+     * @param width The width of ionogram.
+     * @return The column keys.
+     */
+    private Float[] createColumnKeys(int width)
+    {
+        final Float[] result = new Float[width];
+
+        final double binWidth = FREQUENCY_RANGE / width;
+        for (int i = 0; i < width; i++)
+            result[i] = (float) (MIN_FREQUENCY + i * binWidth);
+
+        return result;
     }
 
     @Override

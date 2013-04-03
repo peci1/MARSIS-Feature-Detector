@@ -66,18 +66,18 @@ public class DetectionResultConverter
         if (result == null)
             return frame;
 
-        final float horizScale = (ionogram.getMaxColumnValue() - ionogram.getMinColumnValue()) / (ionogram.getWidth());
-        final float vertScale = (ionogram.getMaxRowValue() - ionogram.getMinRowValue()) / (ionogram.getHeight());
+        final double horizScale = (ionogram.getMaxColumnValue() - ionogram.getMinColumnValue()) / (ionogram.getWidth());
+        final double vertScale = (ionogram.getMaxRowValue() - ionogram.getMinRowValue()) / (ionogram.getHeight());
 
 
         final ElectronPlasmaOscillation hPeriod = (ElectronPlasmaOscillation) result
                 .getFeature(ElectronPlasmaOscillation.ID);
         if (hPeriod != null)
-            frame.setHperiod((float) hPeriod.getPeriod() * horizScale);
+            frame.setHperiod((float) (hPeriod.getPeriod() * horizScale));
 
         final ElectronCyclotronEchoes vPeriod = (ElectronCyclotronEchoes) result.getFeature(ElectronCyclotronEchoes.ID);
         if (vPeriod != null)
-            frame.setVperiod((float) vPeriod.getPeriod() * vertScale);
+            frame.setVperiod((float) (vPeriod.getPeriod() * vertScale));
 
         final IonosphericEcho iono = (IonosphericEcho) result.getFeature(IonosphericEcho.ID);
         if (iono != null)
@@ -107,10 +107,10 @@ public class DetectionResultConverter
         final DetectionResult result = new DetectionResult(ionogram.getId(), new Dimension(ionogram.getWidth(),
                 ionogram.getHeight()));
 
-        final float horizScale = ionogram.getWidth() / (ionogram.getMaxColumnValue() - ionogram.getMinColumnValue());
-        final float vertScale = ionogram.getHeight() / (ionogram.getMaxRowValue() - ionogram.getMinRowValue());
-        final float minX = ionogram.getMinColumnValue();
-        final float minY = ionogram.getMinRowValue();
+        final double horizScale = ionogram.getWidth() / (ionogram.getMaxColumnValue() - ionogram.getMinColumnValue());
+        final double vertScale = ionogram.getHeight() / (ionogram.getMaxRowValue() - ionogram.getMinRowValue());
+        final double minX = ionogram.getMinColumnValue();
+        final double minY = ionogram.getMinRowValue();
 
         if (frame.getHperiod() != null && frame.getHperiod() > 0.00001f) {
             final float period = frame.getHperiod();
@@ -156,14 +156,14 @@ public class DetectionResultConverter
      * 
      * @return The trace.
      */
-    private static TraceType getTrace(Point[] points, float minX, float xScale, float minY, float yScale)
+    private static TraceType getTrace(Point[] points, double minX, double xScale, double minY, double yScale)
     {
         final TraceType trace = factory.createTraceType();
         for (Point point : points) {
             final PointType pointType = factory.createPointType();
             trace.getPoints().add(pointType);
-            pointType.setX(minX + point.x * xScale);
-            pointType.setY(minY + point.y * yScale);
+            pointType.setX((float) (minX + point.x * xScale));
+            pointType.setY((float) (minY + point.y * yScale));
         }
         return trace;
     }
@@ -179,8 +179,8 @@ public class DetectionResultConverter
      * 
      * @return The converted points.
      */
-    private static Point[] framePointsToResultPoints(List<PointType> points, float minX, float xScale, float minY,
-            float yScale)
+    private static Point[] framePointsToResultPoints(List<PointType> points, double minX, double xScale, double minY,
+            double yScale)
     {
         final Point[] result = new Point[points.size()];
         int i = 0;
