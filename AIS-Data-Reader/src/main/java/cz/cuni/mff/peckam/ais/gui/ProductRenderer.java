@@ -31,6 +31,7 @@
 package cz.cuni.mff.peckam.ais.gui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -181,20 +182,24 @@ public class ProductRenderer extends JPanel
         this.colorScale = colorScale;
         firePropertyChange("colorScale", oldScale, colorScale);
 
+        setPreferredSize(new Dimension(product.getWidth(), product.getHeight() + HORIZONTAL_SCALE_HEIGHT));
+
         new SwingWorker<BufferedImage, Void>() {
             @Override
             protected BufferedImage doInBackground() throws Exception
             {
-                final BufferedImage image = new BufferedImage(product.getWidth(), product.getHeight(),
-                        BufferedImage.TYPE_INT_RGB);
+                final int w = product.getWidth();
+                final int h = product.getHeight();
+                final BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 
                 final N[][] data = product.getData();
-                for (int x = 0; x < image.getWidth(); x++) {
-                    for (int y = 0; y < image.getHeight(); y++) {
-                        final Color color = colorScale.getColor(data[x][y]);
-                        image.setRGB(x, y, color.getRGB());
+                final int[] imageData = new int[w * h];
+                for (int x = 0; x < w; x++) {
+                    for (int y = 0; y < h; y++) {
+                        imageData[x + y * w] = colorScale.getColor(data[x][y]).getRGB();
                     }
                 }
+                image.setRGB(0, 0, w, h, imageData, 0, w);
 
                 for (ProductOverlay<?, C, R, ?> overlay : product.getOverlays()) {
                     final OverlayRenderer renderer = overlayRendererFactory.createRenderer(overlay);

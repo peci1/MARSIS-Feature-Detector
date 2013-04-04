@@ -31,6 +31,7 @@
 package cz.cuni.mff.peckam.ais.gui;
 
 import java.awt.EventQueue;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -235,7 +236,7 @@ public class AISFrame
             }
         });
 
-        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>((float) Ionogram.MIN_VALUE / 30f,
+        final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>((float) Ionogram.MIN_VALUE / 10f,
                 (float) Ionogram.MAX_VALUE);
         positionInSeriesComboBox.addActionListener(new ActionListener() {
             @SuppressWarnings("synthetic-access")
@@ -245,6 +246,8 @@ public class AISFrame
                 renderer.setProductAndColorScale(getIonogram((int) positionInSeriesComboBox.getSelectedItem()),
                         colorScale);
                 updateSetMetadataLabel();
+                if (frmAisDataVisualizer.getExtendedState() == Frame.NORMAL)
+                    frmAisDataVisualizer.pack();
             }
         });
     }

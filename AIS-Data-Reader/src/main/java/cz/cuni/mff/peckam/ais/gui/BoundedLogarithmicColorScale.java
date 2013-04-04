@@ -80,8 +80,9 @@ public class BoundedLogarithmicColorScale<N extends Number> implements ColorScal
         if (logValue > logMax)
             return new Color(Color.HSBtoRGB(HUE_MAX, 1f, 1f));
 
-        final float hue = (1 - (logValue - logMin) / logRange) * HUE_MAX;
-        return new Color(Color.HSBtoRGB(hue, 1f, 1f));
+        final float finalValue = 1 - (logValue - logMin) / logRange;
+        final float hue = finalValue * HUE_MAX;
+        return new Color(Color.HSBtoRGB(hue, 1f, 0.9f + 0.1f * finalValue));
     }
 
 }

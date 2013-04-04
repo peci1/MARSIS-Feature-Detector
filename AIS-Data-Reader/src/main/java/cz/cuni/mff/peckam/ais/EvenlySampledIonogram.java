@@ -44,7 +44,7 @@ public class EvenlySampledIonogram extends Ionogram
 {
 
     /** The maximum number of samples. */
-    private static int      MAX_SAMPLES   = 1000;
+    private static int    MAX_SAMPLES = 1500;
 
     /** The columnKeys - frequencies. */
     private final Float[]   columnKeys;
@@ -87,7 +87,7 @@ public class EvenlySampledIonogram extends Ionogram
                 minFreqDiff = freqDiff;
         }
 
-        final int numSamplesFromFreq = (int) Math.ceil(FREQUENCY_RANGE / minFreqDiff);
+        final int numSamplesFromFreq = (int) Math.ceil(2 * FREQUENCY_RANGE / minFreqDiff);
         return Math.min(numSamplesFromFreq, MAX_SAMPLES);
     }
 
@@ -104,40 +104,40 @@ public class EvenlySampledIonogram extends Ionogram
         System.gc();
 
         final float[][] data = new float[width][height];
-        final float[][] weights = new float[width][height];
+        final boolean[][] hasValue = new boolean[width][height];
         final Float[][] origData = original.getData();
 
-        final AISProduct[] cols = original.getColumns();
-        // take the best interpolated positions of the old pixels to new bins and copy values; save the number of
-        // original values in a new bin in the array weights
-        for (int f = 0; f < origData.length; f++) {
-            final int fBin = getFreqBin(cols[f].getFrequency(), width);
-            for (int t = 0; t < origData[f].length; t++) {
-                final int tBin = getTimeBin(t, height);
-                data[fBin][tBin] += origData[f][t];
-                weights[fBin][tBin] += 1;
+        {
+            final float[][] weights = new float[width][height];
+            final AISProduct[] cols = original.getColumns();
+            // take the best interpolated positions of the old pixels to new bins and copy values; save the number of
+            // original values in a new bin in the array weights
+            for (int f = 0; f < origData.length; f++) {
+                final int fBin = getFreqBin(cols[f].getFrequency(), width);
+                for (int t = 0; t < origData[f].length; t++) {
+                    final int tBin = getTimeBin(t, height);
+                    data[fBin][tBin] += origData[f][t];
+                    weights[fBin][tBin] += 1;
+                    hasValue[fBin][tBin] = true;
+                }
             }
-        }
 
-        // firstly we weigh the original data
-        for (int f = 0; f < width; f++) {
-            for (int t = 0; t < height; t++) {
-                if (weights[f][t] > 0) {
-                    data[f][t] /= weights[f][t];
+            // firstly we weigh the original data
+            for (int f = 0; f < width; f++) {
+                for (int t = 0; t < height; t++) {
+                    if (weights[f][t] > 0) {
+                        data[f][t] /= weights[f][t];
+                    }
                 }
             }
         }
 
-        resampleData(data, weights, width, height);
+        // resample along x and y axes to fill the missing rows/cols in rows/cols with some values already set
+        resampleX(data, hasValue, width, height);
+        resampleY(data, hasValue, width, height);
 
-        for (int f = 0; f < width; f++) {
-            for (int t = 0; t < height; t++) {
-                if (data[f][t] > 0)
-                    weights[f][t] = 1;
-            }
-        }
-
-        resampleData(data, weights, width, height);
+        // let it be a bit more smooth
+        resampleX(data, hasValue, width, height);
 
         final Float[][] newData = new Float[width][height];
         for (int f = 0; f < width; f++) {
@@ -149,14 +149,14 @@ public class EvenlySampledIonogram extends Ionogram
     }
 
     /**
-     * Internal work.
+     * Resample data along the x axis using the values already set.
      * 
      * @param data The data values.
-     * @param weights Their weights.
-     * @param width Width.
-     * @param height Height.
+     * @param hasValue Mask of fields with a value already set.
+     * @param width Width of data.
+     * @param height Height of data.
      */
-    private void resampleData(float[][] data, float[][] weights, int width, int height)
+    private void resampleX(float[][] data, boolean[][] hasValue, int width, int height)
     {
         // for every "newly blank" point we will need the positions of its nearest neighbors from the original data set;
         // then we can interpolate correctly from these values
@@ -165,9 +165,9 @@ public class EvenlySampledIonogram extends Ionogram
         for (int t = 0; t < height; t++) {
             nearestLeftValues[0][t] = -1;
             for (int f = 1; f < width; f++) {
-                if (weights[f][t] > 0) {
+                if (hasValue[f][t]) {
                     nearestLeftValues[f][t] = -1;
-                } else if (weights[f - 1][t] > 0) {
+                } else if (hasValue[f - 1][t]) {
                     nearestLeftValues[f][t] = f - 1;
                 } else {
                     nearestLeftValues[f][t] = nearestLeftValues[f - 1][t];
@@ -179,9 +179,9 @@ public class EvenlySampledIonogram extends Ionogram
         for (int t = 0; t < height; t++) {
             nearestRightValues[width - 1][t] = -1;
             for (int f = width - 2; f >= 0; f--) {
-                if (weights[f][t] > 0) {
+                if (hasValue[f][t]) {
                     nearestRightValues[f][t] = -1;
-                } else if (weights[f + 1][t] > 0) {
+                } else if (hasValue[f + 1][t]) {
                     nearestRightValues[f][t] = f + 1;
                 } else {
                     nearestRightValues[f][t] = nearestRightValues[f + 1][t];
@@ -189,13 +189,60 @@ public class EvenlySampledIonogram extends Ionogram
             }
         }
 
+        final double freqTolerance = 0.3;
+        final int maxDecayBins = (int) (Math.ceil(width / (FREQUENCY_RANGE / freqTolerance)));
+
+        for (int f = 0; f < width; f++) {
+            for (int t = 0; t < height; t++) {
+                if (!hasValue[f][t]) {
+                    final int nlv = nearestLeftValues[f][t];
+                    final int nrv = nearestRightValues[f][t];
+
+                    if (nlv != -1 && nrv != -1 && (f - nlv) <= maxDecayBins && (nrv - f) <= maxDecayBins) {
+                        final float left = f - nlv;
+                        final float right = nrv - f;
+                        final float leftWeight = 1 - left / (left + right);
+                        data[f][t] = data[nlv][t] * leftWeight + data[nrv][t] * (1 - leftWeight);
+                        hasValue[f][t] = true;
+                    } else if (nlv != -1 && (f - nlv) <= maxDecayBins) {
+                        final float left = f - nlv;
+                        final float right = nlv + maxDecayBins;
+                        final float leftWeight = 1 - left / (left + right);
+                        data[f][t] = data[nlv][t] * leftWeight;
+                        hasValue[f][t] = true;
+                    } else if (nrv != -1 && (nrv - f) <= maxDecayBins) {
+                        final float left = nrv - maxDecayBins;
+                        final float right = nrv - f;
+                        final float leftWeight = 1 - left / (left + right);
+                        data[f][t] = data[nrv][t] * (1 - leftWeight);
+                        hasValue[f][t] = true;
+                    }
+
+                }
+            }
+        }
+    }
+
+    /**
+     * Resample data along the y axis using the values already set.
+     * 
+     * @param data The data values.
+     * @param hasValue Mask of fields with a value already set.
+     * @param width Width of data.
+     * @param height Height of data.
+     */
+    private void resampleY(float[][] data, boolean[][] hasValue, int width, int height)
+    {
+        // for every "newly blank" point we will need the positions of its nearest neighbors from the original data set;
+        // then we can interpolate correctly from these values
+
         final int[][] nearestTopValues = new int[width][height];
         for (int f = 0; f < width; f++) {
             nearestTopValues[f][0] = -1;
             for (int t = 1; t < height; t++) {
-                if (weights[f][t] > 0) {
+                if (hasValue[f][t]) {
                     nearestTopValues[f][t] = -1;
-                } else if (weights[f][t - 1] > 0) {
+                } else if (hasValue[f][t - 1]) {
                     nearestTopValues[f][t] = t - 1;
                 } else {
                     nearestTopValues[f][t] = nearestTopValues[f][t - 1];
@@ -207,9 +254,9 @@ public class EvenlySampledIonogram extends Ionogram
         for (int f = 0; f < width; f++) {
             nearestBottomValues[f][height - 1] = -1;
             for (int t = height - 2; t >= 0; t--) {
-                if (weights[f][t] > 0) {
+                if (hasValue[f][t]) {
                     nearestBottomValues[f][t] = -1;
-                } else if (weights[f][t + 1] > 0) {
+                } else if (hasValue[f][t + 1]) {
                     nearestBottomValues[f][t] = t + 1;
                 } else {
                     nearestBottomValues[f][t] = nearestBottomValues[f][t + 1];
@@ -217,54 +264,33 @@ public class EvenlySampledIonogram extends Ionogram
             }
         }
 
-        final int maxDecayBins = (int) (Math.ceil(width / (float) NUM_FREQUENCY_BINS) * 4);
+        final int maxDecayBins = height;
 
         for (int f = 0; f < width; f++) {
             for (int t = 0; t < height; t++) {
-                if (weights[f][t] > 0) {
-                    // has already been done
-                } else {
-                    final int nlv = nearestLeftValues[f][t];
-                    final int nrv = nearestRightValues[f][t];
-                    float freqValue = 0;
-                    if (nlv != -1 && nrv != -1 && (f - nlv) <= maxDecayBins && (nrv - f) <= maxDecayBins) {
-                        final float left = (f - nlv) * weights[nlv][t];
-                        final float right = (nrv - f) * weights[nrv][t];
-                        final float leftPos = left / (left + right);
-                        freqValue = data[nlv][t] * leftPos + data[nrv][t] * (1 - leftPos);
-                    } else if (nlv != -1 && (f - nlv) <= maxDecayBins) {
-                        final float left = (f - nlv) * weights[nlv][t];
-                        final float right = nlv + maxDecayBins;
-                        final float leftPos = left / (left + right);
-                        freqValue = data[nlv][t] * leftPos;
-                    } else if (nrv != -1 && (nrv - f) <= maxDecayBins) {
-                        final float left = nrv - maxDecayBins;
-                        final float right = (nrv - f) * weights[nrv][t];
-                        final float leftPos = left / (left + right);
-                        freqValue = data[nrv][t] * (1 - leftPos);
-                    }
-
+                if (!hasValue[f][t]) {
                     final int ntv = nearestTopValues[f][t];
                     final int nbv = nearestBottomValues[f][t];
-                    float timeValue = 0;
+
                     if (ntv != -1 && nbv != -1 && (t - ntv) <= maxDecayBins && (nbv - t) <= maxDecayBins) {
-                        final float top = (t - ntv) * weights[f][ntv];
-                        final float bottom = (nbv - t) * weights[f][nbv];
-                        final float topPos = top / (top + bottom);
-                        timeValue = data[f][ntv] * topPos + data[f][nbv] * (1 - topPos);
+                        final float top = t - ntv;
+                        final float bottom = nbv - t;
+                        final float topWeight = 1 - top / (top + bottom);
+                        data[f][t] = data[f][ntv] * topWeight + data[f][nbv] * (1 - topWeight);
+                        hasValue[f][t] = true;
                     } else if (ntv != -1 && (t - ntv) <= maxDecayBins) {
-                        final float top = (t - ntv) * weights[f][ntv];
+                        final float top = t - ntv;
                         final float bottom = ntv + maxDecayBins;
-                        final float topPos = top / (top + bottom);
-                        timeValue = data[f][ntv] * topPos;
+                        final float topWeight = 1 - top / (top + bottom);
+                        data[f][t] = data[f][ntv] * topWeight;
+                        hasValue[f][t] = true;
                     } else if (nbv != -1 && (nbv - t) <= maxDecayBins) {
                         final float top = nbv - maxDecayBins;
-                        final float bottom = (nbv - t) * weights[f][nbv];
-                        final float topPos = top / (top + bottom);
-                        timeValue = data[f][nbv] * (1 - topPos);
+                        final float bottom = nbv - t;
+                        final float topWeight = 1 - top / (top + bottom);
+                        data[f][t] = data[f][nbv] * (1 - topWeight);
+                        hasValue[f][t] = true;
                     }
-
-                    data[f][t] = (freqValue + timeValue) / 2;
                 }
             }
         }
