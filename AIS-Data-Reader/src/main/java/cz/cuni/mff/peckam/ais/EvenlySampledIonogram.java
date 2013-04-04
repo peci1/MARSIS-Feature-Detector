@@ -110,12 +110,22 @@ public class EvenlySampledIonogram extends Ionogram
         {
             final float[][] weights = new float[width][height];
             final AISProduct[] cols = original.getColumns();
+
             // take the best interpolated positions of the old pixels to new bins and copy values; save the number of
             // original values in a new bin in the array weights
+            final int[] newBinsF = new int[origData.length];
+            final int[] newBinsT = new int[origData[0].length];
+            for (int f = 0; f < newBinsF.length; f++) {
+                newBinsF[f] = getFreqBin(cols[f].getFrequency(), width);
+            }
+            for (int t = 0; t < newBinsT.length; t++) {
+                newBinsT[t] = getTimeBin(t, height);
+            }
+
             for (int f = 0; f < origData.length; f++) {
-                final int fBin = getFreqBin(cols[f].getFrequency(), width);
                 for (int t = 0; t < origData[f].length; t++) {
-                    final int tBin = getTimeBin(t, height);
+                    final int fBin = newBinsF[f];
+                    final int tBin = newBinsT[t];
                     data[fBin][tBin] += origData[f][t];
                     weights[fBin][tBin] += 1;
                     hasValue[fBin][tBin] = true;
@@ -372,10 +382,8 @@ public class EvenlySampledIonogram extends Ionogram
                     + "; " + getMaxColumnValue() + ">, but " + column + " was given.");
         }
 
-        final int rowPosition = getColumns()[0].getDataPosition(row, null).x;
-
-        int colPosition = (int) ((column - getMinColumnValue()) / (getMaxColumnValue() - getMinColumnValue()) * getColumnKeys().length);
-        colPosition = Math.min(colPosition, getColumnKeys().length - 1);
+        final int rowPosition = getTimeBin(getColumns()[0].getDataPosition(row, null).x, getHeight());
+        final int colPosition = getFreqBin(column, getWidth());
 
         return new Point(rowPosition, colPosition);
     }

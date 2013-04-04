@@ -81,7 +81,8 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
             while (period <= ionogram.getMaxColumnValue()) {
                 if (period >= ionogram.getMinColumnValue()) {
                     for (int i = 0; i < 8; i++) {
-                        values.put(new Tuple<>((float) (ionogram.getMinRowValue() + i * ionogram.getRowHeight()),
+                        values.put(
+                                new Tuple<>((float) (1.001f * ionogram.getMinRowValue() + i * ionogram.getRowHeight()),
                                 period),
                                 true);
                     }

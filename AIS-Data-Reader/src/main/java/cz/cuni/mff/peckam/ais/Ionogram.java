@@ -68,6 +68,7 @@ public class Ionogram implements Product<Float, Float, Float>
 
     /** The minimum delay time in ms. */
     public static final double                                                                  MIN_DELAY_TIME           = 253.92856999999998 / 1E3;
+    // public static final double MIN_DELAY_TIME = 162.5 / 1E3;
 
     /** The maximum delay time in ms. */
     public static final double                                                                  MAX_DELAY_TIME           = 7568.21416999999942 / 1E3;
