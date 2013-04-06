@@ -97,7 +97,7 @@ public class ProductRenderer extends JPanel
     private BufferedImage     horizontalScale         = null;
 
     /** Height of the horizontal scale. */
-    private static final int  HORIZONTAL_SCALE_HEIGHT = 30;
+    private static final int             HORIZONTAL_SCALE_HEIGHT = 60;
 
     /** The binary hierarchy levels of labels. */
     private Integer           prevNumLabelLevels      = null;
@@ -277,7 +277,7 @@ public class ProductRenderer extends JPanel
     private final static int         lineHeight;
 
     static {
-        font = UIManager.getFont("Label.font").deriveFont(Font.PLAIN);
+        font = UIManager.getFont("Label.font").deriveFont(Font.PLAIN).deriveFont(25f);
         lineMetrics = font.getLineMetrics(String.format("%.2f", 0.12345f), new FontRenderContext(null, true, false));
         textHeight = (int) lineMetrics.getHeight();
         lineHeight = textHeight + 10; // add some more line-spacing
