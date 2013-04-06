@@ -317,7 +317,7 @@ public class Ionogram implements Product<Float, Float, Float>
     @Override
     public Object getId()
     {
-        return getStartTime();
+        return "Orbit " + orbitNumber + " at " + getStartTime();
     }
 
     /**
