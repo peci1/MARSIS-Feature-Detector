@@ -91,9 +91,18 @@ public class DetectAndSave
 
         final List<DetectionResult> results = new LinkedList<>();
 
-        if (pm != null)
-            pm.setNote("Performing detection");
         for (int i = 0; i < ionograms.length; i++) {
+            if (pm != null) {
+                final int frame = i;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        pm.setNote("Performing detection in orbit " + orbitNum + " frame " + frame + " of "
+                                + ionograms.length);
+                    }
+                });
+            }
             ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
             final DetectionResult result = detector.detectFeatures(ionograms[i]);
             results.add(result);

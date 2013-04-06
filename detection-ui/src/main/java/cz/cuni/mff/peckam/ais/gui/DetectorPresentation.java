@@ -148,6 +148,8 @@ public abstract class DetectorPresentation<DetectorType extends FeatureDetector<
                 final List<DetectionResult> results = detectFeatures(file);
                 if (results != null)
                     this.results.addAll(results);
+                else
+                    break; // the operation was probably cancelled
             } catch (Exception e) {
                 e.printStackTrace();
             }
