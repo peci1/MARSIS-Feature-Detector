@@ -32,6 +32,9 @@ package cz.cuni.mff.peckam.ais.detection;
 
 import java.awt.Point;
 
+import cz.cuni.mff.peckam.ais.Ionogram;
+import cz.cuni.mff.peckam.ais.Product;
+
 /**
  * Ionospheric echo.
  * 
@@ -41,6 +44,11 @@ public class IonosphericEcho extends GeneralCurve
 {
     /** Id of the feature. */
     public static final String ID = "ionosphericEcho";
+
+    /** Start frequency transformed by the product. */
+    private Double             startFreq = null;
+    /** End frequency transformed by the product. */
+    private Double             endFreq   = null;
 
     /**
      * @param points The points of the echo.
@@ -59,8 +67,25 @@ public class IonosphericEcho extends GeneralCurve
     @Override
     public String toString()
     {
-        return String.format("Ionospheric echo from %d to %d with %d points", getPoints()[0].x,
+        if (startFreq != null && endFreq != null) {
+            return String.format("Ionospheric echo from %d MHz to %d MHz with %d points", startFreq, endFreq,
+                    getPoints().length);
+        } else {
+            return String.format("Ionospheric echo from %d px to %d px with %d points", getPoints()[0].x,
                 getPoints()[getPoints().length - 1].x, getPoints().length);
+        }
+    }
+
+    @Override
+    public void readProductData(Product<?, ?, ?> product)
+    {
+        if (product instanceof Ionogram) {
+            final Ionogram iono = (Ionogram) product;
+            startFreq = iono.getMinColumnValue() + (getPoints()[0].x / iono.getWidth())
+                    * (iono.getMaxColumnValue() - iono.getMinColumnValue());
+            endFreq = iono.getMinColumnValue() + (getPoints()[getPoints().length - 1].x / iono.getWidth())
+                    * (iono.getMaxColumnValue() - iono.getMinColumnValue());
+        }
     }
 
 }

@@ -30,6 +30,9 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import cz.cuni.mff.peckam.ais.Ionogram;
+import cz.cuni.mff.peckam.ais.Product;
+
 /**
  * Electron cyclotron echoes.
  * 
@@ -38,6 +41,9 @@ package cz.cuni.mff.peckam.ais.detection;
 public class ElectronCyclotronEchoes extends RepeatingLine
 {
 
+    /** Period transformed by the product. */
+    private Double productPeriod = null;
+
     /**
      * @param offset Offset of the first repeat along the vertical axis.
      * @param period The repetition period.
@@ -45,7 +51,7 @@ public class ElectronCyclotronEchoes extends RepeatingLine
      */
     public ElectronCyclotronEchoes(int offset, double period, int end)
     {
-        super(Direction.HORIZONTAL, offset, period, 0, end);
+        super(Direction.VERTICALLY_REPEATING, offset, period, 0, end);
     }
 
     /** Unique ID of the feature. */
@@ -60,7 +66,19 @@ public class ElectronCyclotronEchoes extends RepeatingLine
     @Override
     public String toString()
     {
-        return String.format("vPeriod=%.3f", getPeriod());
+        if (productPeriod != null)
+            return String.format("vPeriod=%.3f ms", productPeriod);
+        else
+            return String.format("vPeriod=%.3f px", getPeriod());
     }
 
+    @Override
+    public void readProductData(Product<?, ?, ?> product)
+    {
+        if (product instanceof Ionogram) {
+            final Ionogram iono = (Ionogram) product;
+            productPeriod = (getPeriod() / iono.getHeight())
+                    * (iono.getMaxRowValue() - iono.getMinRowValue());
+        }
+    }
 }

@@ -35,6 +35,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import cz.cuni.mff.peckam.ais.Product;
+
 /**
  * Result of feature detection.
  * 
@@ -110,6 +112,19 @@ public class DetectionResult
     public Dimension getSourceProductSize()
     {
         return sourceProductSize;
+    }
+
+    /**
+     * Show the product to all the detected feature in order to be able to transform the features according to the
+     * result (if needed). Don't save references to the product, though, because it will block its freeing from memory
+     * which is important.
+     * 
+     * @param product The product.
+     */
+    public void readProductData(Product<?, ?, ?> product)
+    {
+        for (DetectedFeature feature : features.values())
+            feature.readProductData(product);
     }
 
     @Override

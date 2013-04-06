@@ -34,6 +34,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import cz.cuni.mff.peckam.ais.Product;
+
 /**
  * The base for all detected features.
  * 
@@ -56,5 +58,11 @@ public abstract class DetectedFeatureBase implements DetectedFeature
     public List<String> getTypes()
     {
         return typesUnmodifiable;
+    }
+
+    @Override
+    public void readProductData(Product<?, ?, ?> product)
+    {
+        // ignore
     }
 }

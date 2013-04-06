@@ -66,6 +66,8 @@ public abstract class FeatureDetectorBase<ProductDataType extends Number> implem
         for (DetectedFeature feature : detectFeaturesImpl(product))
             result.addFeature(feature);
 
+        result.readProductData(product);
+
         return result;
     }
 

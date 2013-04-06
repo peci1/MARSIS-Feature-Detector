@@ -66,6 +66,8 @@ import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
+import cz.cuni.mff.peckam.ais.detection.SummingDetector.ComputationStrategy;
+
 /**
  * The main window for detector comparisons.
  * 
@@ -173,7 +175,10 @@ public class DetectionFrame
     protected void registerDetectorPresentations()
     {
         detectorPresentations.add(new ReferenceDataPresentation());
-        detectorPresentations.add(new SummingDetectorPresentation());
+        detectorPresentations.add(new SummingDetectorPresentation(ComputationStrategy.PERIODOGRAM));
+        detectorPresentations.add(new SummingDetectorPresentation(ComputationStrategy.HARMONICS_FITTING));
+        detectorPresentations
+                .add(new SummingDetectorPresentation(ComputationStrategy.QUANTILE_PEAK_DISTANCE_ESTIMATION));
     }
 
     /**

@@ -31,6 +31,7 @@
 package cz.cuni.mff.peckam.ais.gui;
 
 import cz.cuni.mff.peckam.ais.detection.SummingDetector;
+import cz.cuni.mff.peckam.ais.detection.SummingDetector.ComputationStrategy;
 
 /**
  * Presentation for the {@link SummingDetector}.
@@ -43,6 +44,16 @@ public class SummingDetectorPresentation extends DetectorPresentation<SummingDet
     /**  */
     private static final long serialVersionUID = -2472019239328249370L;
 
+    /**
+     * Create the presentation of the summing detector using the given strategy.
+     * 
+     * @param strategy The computation strategy to use.
+     */
+    public SummingDetectorPresentation(ComputationStrategy strategy)
+    {
+        getDetector().setStrategy(strategy);
+    }
+
     @Override
     public void updateComponentStates()
     {
@@ -53,7 +64,7 @@ public class SummingDetectorPresentation extends DetectorPresentation<SummingDet
     @Override
     public String getTabTitle()
     {
-        return "Row/col summing";
+        return "Row/col summing (" + getDetector().getStrategy() + ")";
     }
 
     @Override
@@ -65,7 +76,7 @@ public class SummingDetectorPresentation extends DetectorPresentation<SummingDet
     @Override
     protected String getResultFileSuffix()
     {
-        return "SUM";
+        return "SUM_" + getDetector().getStrategy().toString().toUpperCase();
     }
 
 }

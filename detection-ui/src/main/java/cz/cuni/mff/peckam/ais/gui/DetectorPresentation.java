@@ -41,6 +41,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 
 import com.jgoodies.forms.factories.FormFactory;
@@ -134,25 +135,42 @@ public abstract class DetectorPresentation<DetectorType extends FeatureDetector<
     public void detectFeatures(final Collection<File> orbitFiles) throws IOException
     {
         // TODO
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run()
+            {
+                resultsArea.setText("Detecting...");
+            }
+        });
         results = new LinkedList<>();
         for (File file : orbitFiles) {
-            results.addAll(detectFeatures(file));
+            try {
+                final List<DetectionResult> results = detectFeatures(file);
+                if (results != null)
+                    this.results.addAll(results);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run()
             {
-                final Dimension productSize = results.get(0).getSourceProductSize();
-                headerLbl.setText(String.format("Processed %d orbit file(s) starting with %s, sized %dx%d",
+                if (!results.isEmpty()) {
+                    final Dimension productSize = results.get(0).getSourceProductSize();
+                    headerLbl.setText(String.format("Processed %d orbit file(s) starting with %s, sized %dx%d",
                         orbitFiles.size(), orbitFiles.iterator().next().getName(), productSize.width,
                         productSize.height));
-
-                final StringBuilder builder = new StringBuilder();
-                for (DetectionResult result : results) {
-                    builder.append(result).append("\n");
+                    final StringBuilder builder = new StringBuilder();
+                    for (DetectionResult result : results) {
+                        builder.append(result).append("\n");
+                    }
+                    resultsArea.setText(builder.toString());
+                } else {
+                    headerLbl.setText("");
+                    resultsArea.setText("Detection failed");
                 }
-                resultsArea.setText(builder.toString());
             }
         });
     }
@@ -167,7 +185,15 @@ public abstract class DetectorPresentation<DetectorType extends FeatureDetector<
      */
     protected List<DetectionResult> detectFeatures(File orbitFile) throws IOException
     {
-        return DetectAndSave.detectAndSave(orbitFile, detector, getResultFileSuffix());
+        final ProgressMonitor pm = new ProgressMonitor(this, "Detecting...", "", 0, 1000);
+        try {
+            return DetectAndSave.detectAndSave(orbitFile, detector, getResultFileSuffix(), pm);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            pm.setProgress(pm.getMaximum());
+        }
     }
 
     /**

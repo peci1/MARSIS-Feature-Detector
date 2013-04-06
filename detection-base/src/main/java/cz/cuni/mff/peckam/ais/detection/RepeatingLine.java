@@ -118,8 +118,8 @@ public abstract class RepeatingLine extends DetectedFeatureBase
      */
     public enum Direction
     {
-        /** Horizontal line. */
-        HORIZONTAL
+        /** Horizontal line with vertical repeating pattern. */
+        VERTICALLY_REPEATING
         {
             @Override
             protected String getType()
@@ -127,8 +127,8 @@ public abstract class RepeatingLine extends DetectedFeatureBase
                 return DetectedFeature.TYPE_REPEATING_HORIZONTAL_LINE;
             }
         },
-        /** Vertical line. */
-        VERTICAL
+        /** Vertical line with horizontal repeating pattern. */
+        HORIZONTALLY_REPEATING
         {
             @Override
             protected String getType()

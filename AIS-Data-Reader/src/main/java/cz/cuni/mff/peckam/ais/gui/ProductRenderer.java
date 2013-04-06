@@ -35,18 +35,27 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutionException;
 
+import javax.imageio.ImageIO;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 
@@ -62,8 +71,18 @@ import cz.cuni.mff.peckam.ais.ProductOverlay;
  */
 public class ProductRenderer extends JPanel
 {
+    /**
+     * 
+     */
+    public ProductRenderer()
+    {
+    }
+
     /**  */
     private static final long serialVersionUID = -8158771042857186802L;
+
+    /** Popup. */
+    private final JPopupMenu             popupMenu               = new JPopupMenu();
 
     /** The product to render. */
     private Product<?, ?, ?>  product                 = null;
@@ -101,6 +120,28 @@ public class ProductRenderer extends JPanel
         });
 
         overlayRendererFactory = createOverlayRendererFactory();
+
+        setComponentPopupMenu(popupMenu);
+        JMenuItem item = new JMenuItem("Save image");
+        popupMenu.add(item);
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                final JFileChooser chooser = new JFileChooser();
+                if (chooser.showSaveDialog(ProductRenderer.this) == JFileChooser.APPROVE_OPTION) {
+                    final File file = chooser.getSelectedFile();
+                    try {
+                        ImageIO.write(image, "PNG", file);
+                        JOptionPane.showMessageDialog(ProductRenderer.this, "The image has been saved.");
+                    } catch (IOException e1) {
+                        JOptionPane
+                                .showMessageDialog(ProductRenderer.this, "An error occured when saving the picture.");
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
     }
 
     @Override

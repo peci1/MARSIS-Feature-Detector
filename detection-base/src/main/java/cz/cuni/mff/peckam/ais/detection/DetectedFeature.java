@@ -32,6 +32,8 @@ package cz.cuni.mff.peckam.ais.detection;
 
 import java.util.List;
 
+import cz.cuni.mff.peckam.ais.Product;
+
 /**
  * One feature detected in 2D product.
  * 
@@ -71,4 +73,12 @@ public interface DetectedFeature
      * @return The unique ID of the feature.
      */
     String getId();
+
+    /**
+     * Show the product to the feature in order to be able to transform it according to the result (if needed). Don't
+     * save references to the product, though, because it will block its freeing from memory which is important.
+     * 
+     * @param product The product.
+     */
+    void readProductData(Product<?, ?, ?> product);
 }

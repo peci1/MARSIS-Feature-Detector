@@ -38,6 +38,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
+
 import cz.cuni.mff.peckam.ais.AISLBLProductReader;
 import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
@@ -66,37 +69,64 @@ public class DetectAndSave
      * @param lblFile The LBL file to parse.
      * @param detector The detector to use.
      * @param resultSuffix Suffix of the results file.
+     * @param pm The progress monitor.
      * 
      * @return The results of the detection.
      * @throws IOException On IO error in either reading or writing.
      */
-    public static List<DetectionResult> detectAndSave(File lblFile, FeatureDetector<Float> detector, String resultSuffix)
+    public static List<DetectionResult> detectAndSave(File lblFile, FeatureDetector<Float> detector,
+            String resultSuffix, final ProgressMonitor pm)
             throws IOException
     {
+        if (pm != null)
+            pm.setNote("Reading the .LBL file");
         final Ionogram[] ionograms = reader.readFile(lblFile);
-        for (int i = 0; i < ionograms.length; i++) {
-            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
-        }
+
+        final double pmPieceSize = (pm != null) ? (pm.getMaximum() - pm.getMinimum()) / ionograms.length : 0;
+        double finishedPiecesSize = 0;
 
         final Orbit orbit = factory.createOrbit();
         final int orbitNum = ionograms[0].getOrbitNumber();
         orbit.setId(orbitNum);
-        final ResultWriter writer = new ResultWriter(orbit);
 
         final List<DetectionResult> results = new LinkedList<>();
-        for (Ionogram ionogram : ionograms) {
-            final DetectionResult result = detector.detectFeatures(ionogram);
+
+        if (pm != null)
+            pm.setNote("Performing detection");
+        for (int i = 0; i < ionograms.length; i++) {
+            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
+            final DetectionResult result = detector.detectFeatures(ionograms[i]);
             results.add(result);
-            orbit.getFrames().add(DetectionResultConverter.convert(result, ionogram));
+            orbit.getFrames().add(DetectionResultConverter.convert(result, ionograms[i]));
+
+            ionograms[i] = null;
+            System.gc();
+
+            if (pm != null) {
+                final int progress = (int) (finishedPiecesSize += pmPieceSize);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        pm.setProgress(progress);
+                    }
+                });
+                if (pm.isCanceled())
+                    return null;
+            }
         }
+
 
         final String outFileName = String.format(Locale.ENGLISH, "TRACE_%04d_%s.XML", orbitNum, resultSuffix);
         final File outFile = new File(lblFile.getParent(), outFileName);
+        final ResultWriter writer = new ResultWriter(orbit);
 
         try (OutputStream output = new FileOutputStream(outFile)) {
             writer.writeXML(output);
         }
 
+        if (pm != null)
+            pm.setProgress(pm.getMaximum());
         return results;
     }
 }

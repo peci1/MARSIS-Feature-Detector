@@ -35,6 +35,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
+
 import cz.cuni.mff.peckam.ais.AISLBLProductReader;
 import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
@@ -87,13 +90,31 @@ public class ReferenceDataPresentation extends DetectorPresentation<ReferenceDat
     protected List<DetectionResult> detectFeatures(File orbitFile) throws IOException
     {
         final Ionogram[] ionograms = reader.readFile(orbitFile);
-        for (int i = 0; i < ionograms.length; i++) {
-            ionograms[i] = new EvenlySampledIonogram(ionograms[i]);
-        }
-
         final List<DetectionResult> results = new LinkedList<>();
-        for (Ionogram ionogram : ionograms)
-            results.add(getDetector().detectFeatures(ionogram));
+        final ProgressMonitor pm = new ProgressMonitor(this, "Detecting...", "Resampling the ionograms", 0,
+                ionograms.length - 1);
+        for (int i = 0; i < ionograms.length; i++) {
+            {
+                final Ionogram iono = new EvenlySampledIonogram(ionograms[i]);
+                final DetectionResult result = getDetector().detectFeatures(iono);
+                results.add(result);
+                result.readProductData(iono);
+            }
+            ionograms[i] = null;
+            System.gc();
+
+            if (pm.isCanceled())
+                return null;
+
+            final int progress = i;
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run()
+                {
+                    pm.setProgress(progress);
+                }
+            });
+        }
 
         return results;
     }

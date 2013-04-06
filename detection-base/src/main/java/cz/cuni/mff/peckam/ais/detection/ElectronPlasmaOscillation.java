@@ -30,6 +30,9 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import cz.cuni.mff.peckam.ais.Ionogram;
+import cz.cuni.mff.peckam.ais.Product;
+
 /**
  * Electron plasma oscillations harmonics.
  * 
@@ -38,6 +41,9 @@ package cz.cuni.mff.peckam.ais.detection;
 public class ElectronPlasmaOscillation extends RepeatingLine
 {
 
+    /** Period transformed by the product. */
+    private Double productPeriod = null;
+
     /**
      * @param offset Offset of the first repeat along horizontal axis.
      * @param period The repetition period.
@@ -45,7 +51,7 @@ public class ElectronPlasmaOscillation extends RepeatingLine
      */
     public ElectronPlasmaOscillation(int offset, double period, int end)
     {
-        super(Direction.VERTICAL, offset, period, 0, end);
+        super(Direction.HORIZONTALLY_REPEATING, offset, period, 0, end);
     }
 
     /** Unique ID of the feature. */
@@ -60,7 +66,20 @@ public class ElectronPlasmaOscillation extends RepeatingLine
     @Override
     public String toString()
     {
-        return String.format("hPeriod=%.3f", getPeriod());
+        if (productPeriod != null)
+            return String.format("hPeriod=%.3f MHz", productPeriod);
+        else
+            return String.format("hPeriod=%.3f px", getPeriod());
+    }
+
+    @Override
+    public void readProductData(Product<?, ?, ?> product)
+    {
+        if (product instanceof Ionogram) {
+            final Ionogram iono = (Ionogram) product;
+            productPeriod = (getPeriod() / iono.getWidth())
+                    * (iono.getMaxColumnValue() - iono.getMinColumnValue());
+        }
     }
 
 }
