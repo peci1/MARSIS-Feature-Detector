@@ -84,6 +84,9 @@ public class IonogramStatistics
         this.traceWriter = traceWriter;
     }
 
+    /**  */
+    private static float min = Float.MAX_VALUE;
+
     /**
      * Compute the stats.
      * 
@@ -105,6 +108,8 @@ public class IonogramStatistics
                     sum += data[x][y];
                     if (data[x][y] > max)
                         max = data[x][y];
+                    if (data[x][y] < min)
+                        min = data[x][y];
                 }
             }
             final float mean = sum / numItems;
@@ -125,7 +130,7 @@ public class IonogramStatistics
             }
 
             final FrameType result = iono.getReferenceDetectionResult();
-            
+
             if (result.getHperiod() == null && result.getVperiod() == null && result.getIonospheretrace() == null
                     && result.getIonospheretrace() == null)
                 continue;
@@ -134,8 +139,10 @@ public class IonogramStatistics
             final Float vp = result.getVperiod() != null && result.getVperiod() > 0 ? result.getVperiod() : null;
             final List<PointType> gp = result.getGroundtrace() != null
                     && result.getGroundtrace().getPoints().size() > 0 ? result.getGroundtrace().getPoints() : null;
-            final List<PointType> ip = result.getIonospheretrace() != null && result.getIonospheretrace().getPoints().size() > 0 ? result.getIonospheretrace().getPoints() : null;
-            
+            final List<PointType> ip = result.getIonospheretrace() != null
+                    && result.getIonospheretrace().getPoints().size() > 0 ? result.getIonospheretrace().getPoints()
+                    : null;
+
             final boolean hasFeatures = hp != null || vp != null || gp != null || ip != null;
 
             meanWriter.write(format(mean) + " " + (hasFeatures ? 1 : 0));
@@ -146,18 +153,18 @@ public class IonogramStatistics
 
             maxWriter.write(format(max) + " " + (hasFeatures ? 1 : 0));
             maxWriter.newLine();
-            
+
             if (ip != null)
                 writeTracePoints(result.getIonospheretrace().getPoints(), iono, "iono");
             if (gp != null)
                 writeTracePoints(result.getGroundtrace().getPoints(), iono, "ground");
-            
+
             final int w = iono.getWidth(), h = iono.getHeight();
             for (int x = 0; x < data.length; x++) {
                 for (int y = 0; y < data[0].length; y++) {
                     final float val = data[x][y];
                     if (val > 1E-12) {
-                        final PointType pos = iono.getFreqTimePosition(x,y);
+                        final PointType pos = iono.getFreqTimePosition(x, y);
                         final float posX = pos.getX();
                         final float posY = pos.getY();
 
@@ -264,6 +271,7 @@ public class IonogramStatistics
                 }
             }
         }
+        System.out.println("Minimal value: " + min);
     }
 
 }
