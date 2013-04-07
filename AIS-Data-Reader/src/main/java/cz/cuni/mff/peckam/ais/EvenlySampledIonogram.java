@@ -32,6 +32,9 @@ package cz.cuni.mff.peckam.ais;
 
 import java.awt.Point;
 
+import cz.cuni.mff.peckam.ais.result.ObjectFactory;
+import cz.cuni.mff.peckam.ais.result.PointType;
+
 /**
  * A ionogram with the frequency (columns) evenly sampled.
  * <p>
@@ -49,6 +52,13 @@ public class EvenlySampledIonogram extends Ionogram
     /** The columnKeys - frequencies. */
     private final Float[]   columnKeys;
 
+    /**  */
+    private final ObjectFactory factory     = new ObjectFactory();
+    /** Coefficient to be applied to x data coordinates to get frequency. */
+    private final float         xCoef;
+    /** Coefficient to be applied to y data coordinates to get time delay. */
+    private final float         yCoef;
+
     /**
      * @param original The original ionogram.
      */
@@ -61,6 +71,9 @@ public class EvenlySampledIonogram extends Ionogram
 
         this.columnKeys = createColumnKeys(width);
         resample(original, width, height);
+
+        this.xCoef = (float) (FREQUENCY_RANGE / width);
+        this.yCoef = (float) (DELAY_TIME_RANGE / height);
 
         for (ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> overlay : original.getOverlays()) {
             addOverlay(overlay);
@@ -386,6 +399,15 @@ public class EvenlySampledIonogram extends Ionogram
         final int colPosition = getFreqBin(column, getWidth());
 
         return new Point(rowPosition, colPosition);
+    }
+
+    @Override
+    public PointType getFreqTimePosition(int x, int y)
+    {
+        final PointType result = factory.createPointType();
+        result.setX((float) (x * xCoef + MIN_FREQUENCY));
+        result.setY((float) (y * yCoef + MIN_DELAY_TIME));
+        return result;
     }
 
 }

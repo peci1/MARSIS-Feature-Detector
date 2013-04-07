@@ -37,6 +37,8 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import cz.cuni.mff.peckam.ais.result.FrameType;
+import cz.cuni.mff.peckam.ais.result.ObjectFactory;
+import cz.cuni.mff.peckam.ais.result.PointType;
 
 /**
  * A set of {@link AISProduct}s forming one complete data frame.
@@ -73,6 +75,10 @@ public class Ionogram implements Product<Float, Float, Float>
     /** The maximum delay time in ms. */
     public static final double                                                                  MAX_DELAY_TIME           = 7568.21416999999942 / 1E3;
 
+    /** The width of the time delay range. */
+    public static final double                                                                  DELAY_TIME_RANGE         = MAX_DELAY_TIME
+                                                                                                                                 - MIN_DELAY_TIME;
+
     /** Width of one time delay measuring bin. */
     public static final double                                                                  DELAY_TIME_BIN_WIDTH     = 91.428569999999993 / 1E3;
 
@@ -106,6 +112,11 @@ public class Ionogram implements Product<Float, Float, Float>
     /** The referential result of feature detection. */
     private FrameType                                                                           referenceDetectionResult = null;
 
+    /**  */
+    private final ObjectFactory                                                                 factory                  = new ObjectFactory();
+    /** Coefficient to be applied to y data coordinates to get time delay. */
+    private final float                                                                         yCoef;
+
     /**
      * @param columns Data columns.
      * @param orbitNumber The orbit number.
@@ -126,6 +137,7 @@ public class Ionogram implements Product<Float, Float, Float>
 
         this.frequencyTableNumber = columns[0].getFrequencyTableNumber();
         this.startTime = columns[0].getSpaceCraftClock();
+        this.yCoef = (float) (DELAY_TIME_RANGE / getHeight());
     }
 
     /**
@@ -272,10 +284,12 @@ public class Ionogram implements Product<Float, Float, Float>
             throw new IllegalArgumentException("Row value must lie within the interval <" + getMinRowValue() + "; "
                     + getMaxRowValue() + ">, but " + row + " was given.");
 
-        if (column < getMinColumnValue() || column > getMaxColumnValue()) {
+        if (column + 0.01 * FREQUENCY_RANGE < getMinColumnValue()
+                || column - 0.01 * FREQUENCY_RANGE > getMaxColumnValue()) {
             throw new IllegalArgumentException("Column value must lie within the interval <" + getMinColumnValue()
                     + "; " + getMaxColumnValue() + ">, but " + column + " was given.");
         }
+        final float pColumn = (float) Math.max(MIN_FREQUENCY, Math.min(MAX_FREQUENCY, column));
 
         int rowPosition = columns[0].getDataPosition(row, null).x;
 
@@ -285,7 +299,7 @@ public class Ionogram implements Product<Float, Float, Float>
         final Float[] columnKeys = getColumnKeys();
         for (int i = 0; i < columnKeys.length; i++) {
             final float columnKey = columnKeys[i];
-            final float distance = Math.abs(columnKey - column);
+            final float distance = Math.abs(columnKey - pColumn);
             if (bestColumnKeyDistance > distance) {
                 bestColumnKeyDistance = distance;
                 bestColumnKeyIndex = i;
@@ -293,9 +307,24 @@ public class Ionogram implements Product<Float, Float, Float>
         }
 
         if (bestColumnKeyIndex == null)
-            throw new IllegalStateException("Couldn't find corresponding column key for column value " + column);
+            throw new IllegalStateException("Couldn't find corresponding column key for column value " + pColumn);
 
         return new Point(rowPosition, bestColumnKeyIndex);
+    }
+
+    /**
+     * Return the frequency/time delay coordinates for the given data coordinates.
+     * 
+     * @param x X coord.
+     * @param y Y coord.
+     * @return Coordinates in freq/time.
+     */
+    public PointType getFreqTimePosition(int x, int y)
+    {
+        final PointType result = factory.createPointType();
+        result.setX(columns[x].getFrequency());
+        result.setY((float) (y * yCoef + MIN_DELAY_TIME));
+        return result;
     }
 
     @Override
