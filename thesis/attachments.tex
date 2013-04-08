@@ -1,0 +1,94 @@
+%%% Pøílohy k diplomové práci, existují-li (rùzné dodatky jako výpisy programù,
+%%% diagramy apod.). Každá pøíloha musí být alespoò jednou odkazována z vlastního
+%%% textu práce. Pøílohy se èíslují.
+\chapwithtoc{Attachments}
+
+\lstloadlanguages{XML}
+
+\section*{Active Ionospheric Sounding data format}
+\lstinputlisting[caption={Active Ionospheric Sounding data format},label=att:format]{listings/AIS_FORMAT.FMT}
+
+%lstinputlisting doesn't work here
+\section*{Result file format}
+\lstset{language=XML,label=att:result,caption={The XML Schema of the results file}}
+\begin{lstlisting}
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.mff.cuni.cz/~peckam/java/ais-detection-result"
+	xmlns:tns="http://www.mff.cuni.cz/~peckam/java/ais-detection-result"
+	xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	jxb:extensionBindingPrefixes="xjc"
+	elementFormDefault="qualified"
+	jxb:version="1.0">
+
+	<annotation>
+		<appinfo> 
+			<jxb:schemaBindings>
+				<jxb:package name="cz.cuni.mff.peckam.ais.result"></jxb:package>
+			</jxb:schemaBindings>
+			<jxb:globalBindings>
+				<xjc:simple/>
+				<jxb:javaType name="Float" xmlType="float"
+					parseMethod="javax.xml.bind.DatatypeConverter.parseFloat"
+					printMethod="cz.cuni.mff.peckam.ais.result.JAXBValueConverter.printFloatThreeDecimals"/>
+			</jxb:globalBindings>
+		</appinfo>
+	</annotation>
+
+    <element name="orbit" type="tns:orbitType"></element>
+
+	<complexType name="orbitType">
+		<sequence maxOccurs="unbounded" minOccurs="1">
+			<element name="frame" type="tns:frameType"></element>
+		</sequence>
+		<attribute name="id" type="int" use="required"></attribute>
+	</complexType>
+
+    <complexType name="frameType">
+    	<sequence>
+    		<element name="time" type="tns:datetime"></element>
+			<element name="sza" type="float" minOccurs="0"></element>
+			<element name="alt" type="int" minOccurs="0"></element>
+			<element name="lat" type="float" minOccurs="0"></element>
+			<element name="lon" type="float" minOccurs="0"></element>
+			<element name="x" type="float" minOccurs="0"></element>
+			<element name="rho" type="float" minOccurs="0"></element>
+			<element name="hperiod" type="float" minOccurs="0"></element>
+			<element name="hperiodquality" type="tns:boolAsInt" minOccurs="0"></element>
+			<element name="vperiod" type="float" minOccurs="0"></element>
+			<element name="cutoff" type="float" minOccurs="0"></element>
+    		<element name="ionospheretrace" type="tns:traceType" minOccurs="0"></element>
+    		<element name="groundtrace" type="tns:traceType" minOccurs="0"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="traceType">
+    	<sequence>
+    		<element name="point" type="tns:pointType" maxOccurs="unbounded" minOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="pointType">
+    	<attribute name="x" type="float" use="required"></attribute>
+    	<attribute name="y" type="float" use="required"></attribute>
+    </complexType>
+
+	<simpleType name="datetime">
+		<annotation>
+			<appinfo>
+				<jxb:javaType name="org.joda.time.DateTime"
+					parseMethod="org.joda.time.DateTime.parse"
+					printMethod="cz.cuni.mff.peckam.ais.result.JAXBValueConverter.printDateTime"/>		
+			</appinfo>
+		</annotation>
+		<restriction base="string"/>
+	</simpleType>
+
+    <simpleType name="boolAsInt">
+    	<restriction base="int">
+    		<minInclusive value="0"/>
+    		<maxInclusive value="1"/>
+    	</restriction>
+    </simpleType>
+</schema>
+\end{lstlisting}

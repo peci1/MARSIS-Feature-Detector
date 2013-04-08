@@ -42,12 +42,14 @@
 \usepackage[font={small}]{caption}
  
 \usepackage{longtable}
+\usepackage{textcomp}
+\usepackage{xcolor}
 
 \usepackage{listings}
 
 \lstset{%
   showstringspaces=false,
-  basicstyle=\ttfamily,
+  basicstyle=\ttfamily\scriptsize,
   breaklines=true,
   columns=fullflexible,
   numbers=left, numberstyle=\tiny, stepnumber=2, numbersep=5pt,
@@ -293,10 +295,7 @@ pattern~recognition, object~detection, parametric~curves, Mars~Express, vectoriz
 %%% Použité zkratky v diplomové práci, existují-li, vèetnì jejich vysvìtlení.
 \chapwithtoc{List of Abbreviations}
 
-%%% Pøílohy k diplomové práci, existují-li (rùzné dodatky jako výpisy programù,
-%%% diagramy apod.). Každá pøíloha musí být alespoò jednou odkazována z vlastního
-%%% textu práce. Pøílohy se èíslují.
-\chapwithtoc{Attachments}
+\include{attachments}
 
 \openright
 \end{document}
