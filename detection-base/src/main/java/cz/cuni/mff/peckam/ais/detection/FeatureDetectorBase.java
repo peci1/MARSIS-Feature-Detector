@@ -60,16 +60,29 @@ public abstract class FeatureDetectorBase<ProductDataType extends Number> implem
     @Override
     public DetectionResult detectFeatures(Product<ProductDataType, ?, ?> product)
     {
-        final DetectionResult result = new DetectionResult(product.getId(), new Dimension(product.getWidth(),
-                product.getHeight()));
+        if (canHaveFeatures(product)) {
+            final DetectionResult result = new DetectionResult(product.getId(), new Dimension(product.getWidth(),
+                    product.getHeight()));
 
-        for (DetectedFeature feature : detectFeaturesImpl(product))
-            result.addFeature(feature);
+            for (DetectedFeature feature : detectFeaturesImpl(product))
+                result.addFeature(feature);
 
-        result.readProductData(product);
+            result.readProductData(product);
 
-        return result;
+            return result;
+        } else {
+            return new NoFeatureDetectionResult(product.getId(), new Dimension(product.getWidth(), product.getHeight()));
+        }
     }
+
+    /**
+     * Return true if the product is eligible for detection. Return true if e.g. stats show that it is not worth
+     * exploring.
+     * 
+     * @param product The product.
+     * @return Whether to perform detection or the product is featureless.
+     */
+    protected abstract boolean canHaveFeatures(Product<ProductDataType, ?, ?> product);
 
     /**
      * Detect features in the given data product.

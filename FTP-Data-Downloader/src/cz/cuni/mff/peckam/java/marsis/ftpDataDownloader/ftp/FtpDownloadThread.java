@@ -96,7 +96,7 @@ public class FtpDownloadThread extends FtpThread
 
             // if the download hasn't been successful, throw an exception
             if (!downloaded)
-                throw new IOException("Download failed");
+                throw new IOException("Download failed: " + ftpFile);
 
             onFileDownloaded(ftpFile, new File(this.localFile));
 

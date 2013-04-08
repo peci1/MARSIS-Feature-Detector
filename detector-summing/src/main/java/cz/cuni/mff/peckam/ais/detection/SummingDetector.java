@@ -62,7 +62,7 @@ import cz.cuni.mff.peckam.ais.Tuple;
  * 
  * @author Martin Pecka
  */
-public class SummingDetector extends FeatureDetectorBase<Float>
+public class SummingDetector extends FloatFeatureDetector
 {
 
     /** The strategy used for computing. */
@@ -354,7 +354,7 @@ public class SummingDetector extends FeatureDetectorBase<Float>
     {
         final int n0 = sums.length, t = n0;
         final float[] peaks = new float[t];
-        final double quantile = new Percentile(75).evaluate(asDouble(sums));
+        final double quantile = new Percentile(60).evaluate(asDouble(sums));
         for (int i = 0; i < peaks.length; i++) {
             if (sums[i] >= quantile)
                 peaks[i] = sums[i];
@@ -433,7 +433,7 @@ public class SummingDetector extends FeatureDetectorBase<Float>
      */
     private float[] getRowSums(float[][] data)
     {
-        final int w = data.length, h = data[0].length;
+        final int w = data.length / 2, h = data[0].length;
 
         final float[] result = new float[h];
         for (int y = 0; y < h; y++) {

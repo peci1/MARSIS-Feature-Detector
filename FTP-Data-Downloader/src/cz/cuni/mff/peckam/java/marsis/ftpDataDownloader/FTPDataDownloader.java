@@ -22,11 +22,8 @@ public class FTPDataDownloader
     /**
      * The FTP directory in which image files are stored.
      */
-    private static final String  IMAGE_DIR       = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-EXT2-V1.0/BROWSE/ACTIVE_IONOSPHERIC_SOUNDER/";
-    /**
-     * The FTP directory in which data are stored.
-     */
-    private static final String  DATA_DIR        = "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-EXT2-V1.0/DATA/ACTIVE_IONOSPHERIC_SOUNDER/";
+    // private static final String IMAGE_DIR =
+    // "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-EXT2-V1.0/BROWSE/ACTIVE_IONOSPHERIC_SOUNDER/";
 
     /**
      * The number of already downloaded files.
@@ -60,27 +57,30 @@ public class FTPDataDownloader
                     String tenFolderName = iString.substring(0, iString.length() - 1) + "X";
 
                     if (i == start || i % 10 == 0) {
-                        FtpFile dataDirContents = new FtpFile(DATA_DIR + "/RDR" + tenFolderName, getFtpClient());
+                        FtpFile dataDirContents = new FtpFile(getDataDir(i) + "/RDR" + tenFolderName, getFtpClient());
                         CoFile[] dataDirFiles = dataDirContents.listCoFiles();
                         if (dataDirFiles != null) {
-                            new File("data\\" + tenFolderName).mkdir();
+                            new File("data" + File.separator + tenFolderName).mkdir();
                             for (CoFile file : dataDirFiles) {
                                 executorService.execute(new FtpDownloadThread(file.getName(), dataDirContents
-                                        .getAbsolutePath(), "data/" + tenFolderName + "/" + file.getName()));
+                                        .getAbsolutePath(), "data" + File.separator + tenFolderName + File.separator
+                                        + file.getName()));
                             }
                         }
                     }
 
-                    FtpFile imageDirContents = new FtpFile(IMAGE_DIR + "/RDR" + tenFolderName + "/RDR" + iString,
-                            getFtpClient());
-                    CoFile[] imageDirFiles = imageDirContents.listCoFiles();
-                    if (imageDirFiles != null) {
-                        new File("data\\" + tenFolderName + "\\" + iString).mkdir();
-                        for (CoFile file : imageDirFiles) {
-                            executorService.execute(new FtpDownloadThread(file.getName(), imageDirContents
-                                    .getAbsolutePath(), "data/" + tenFolderName + "/" + iString + "/" + file.getName()));
-                        }
-                    }
+                    /*
+                     * FtpFile imageDirContents = new FtpFile(IMAGE_DIR + "/RDR" + tenFolderName + "/RDR" + iString,
+                     * getFtpClient());
+                     * CoFile[] imageDirFiles = imageDirContents.listCoFiles();
+                     * if (imageDirFiles != null) {
+                     * new File("data\\" + tenFolderName + "\\" + iString).mkdir();
+                     * for (CoFile file : imageDirFiles) {
+                     * executorService.execute(new FtpDownloadThread(file.getName(), imageDirContents
+                     * .getAbsolutePath(), "data/" + tenFolderName + "/" + iString + "/" + file.getName()));
+                     * }
+                     * }
+                     */
                 }
             }
         });
@@ -95,5 +95,22 @@ public class FTPDataDownloader
     {
         downloadedBytes += size;
         System.err.println("Downloaded " + (++downloadedFiles) + " files, " + downloadedBytes + " bytes");
+    }
+
+    /**
+     * Return the data directory location.
+     * 
+     * @param orbit The orbit number.
+     * @return The data dir.
+     */
+    private static String getDataDir(int orbit)
+    {
+        String ext = "1";
+        if (orbit >= 4800 && orbit < 7670)
+            ext = "2";
+        else if (orbit >= 7670)
+            ext = "3";
+        return "/pub/mirror/MARS-EXPRESS/MARSIS/MEX-M-MARSIS-3-RDR-AIS-EXT" + ext
+                + "-V1.0/DATA/ACTIVE_IONOSPHERIC_SOUNDER/";
     }
 }
