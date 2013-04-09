@@ -55,14 +55,14 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
     private final Map<Tuple<Float, Float>, Boolean> values;
 
     /** The type of the overlay. */
-    private final String                            type;
+    private final ProductOverlayType                type;
 
     /**
      * @param ionogram The overlaid ionogram.
      * @param resultData The data of the overlay.
      * @param type The type of the overlay.
      */
-    public AISResultOverlay(Ionogram ionogram, FrameType resultData, String type)
+    public AISResultOverlay(Ionogram ionogram, FrameType resultData, ProductOverlayType type)
     {
         this.ionogram = ionogram;
         this.resultData = resultData;
@@ -101,10 +101,10 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
                 if (period >= ionogram.getMinRowValue()) {
                     for (int i = 0; i < 8; i++) {
                         final float f = ionogram.getFreqTimePosition(i, 0).getX();
-                        values.put(new Tuple<>(f, period), true);
+                        values.put(new Tuple<>(period, f), true);
                     }
                 }
-                period += resultData.getHperiod();
+                period += resultData.getVperiod();
             }
         }
     }
@@ -128,7 +128,7 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
     }
 
     @Override
-    public String getType()
+    public ProductOverlayType getType()
     {
         return type;
     }

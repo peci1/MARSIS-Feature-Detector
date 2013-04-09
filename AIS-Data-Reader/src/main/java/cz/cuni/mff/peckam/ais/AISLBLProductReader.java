@@ -57,7 +57,7 @@ public class AISLBLProductReader
     private static final int                     NUM_COLUMNS            = Ionogram.NUM_FREQUENCY_BINS;
 
     /** Overlay type defining manually obtained data. */
-    public static final String OVERLAY_TYPE_MANUAL    = "manual";
+    public static final ProductOverlayType       OVERLAY_TYPE_MANUAL    = new ProductOverlayType.Manual();
 
     /** Overlay type defining automatically obtained data. */
     public static final String OVERLAY_TYPE_AUTOMATIC = "automatic";

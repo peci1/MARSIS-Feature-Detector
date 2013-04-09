@@ -31,7 +31,7 @@
 package cz.cuni.mff.peckam.ais;
 
 import java.awt.Point;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * A general product of generic data type with basic properties.
@@ -99,5 +99,12 @@ public interface Product<DataType extends Number, ColumnKeyType, RowKeyType>
     /**
      * @return All overlays defined on this product.
      */
-    List<ProductOverlay<?, ColumnKeyType, RowKeyType, ? extends Product<DataType, ColumnKeyType, RowKeyType>>> getOverlays();
+    Collection<ProductOverlay<?, ColumnKeyType, RowKeyType, ? extends Product<DataType, ColumnKeyType, RowKeyType>>> getOverlays();
+
+    /**
+     * @param type Type of the overlay.
+     * @return The overlay.
+     */
+    ProductOverlay<?, ColumnKeyType, RowKeyType, ? extends Product<DataType, ColumnKeyType, RowKeyType>> getOverlay(
+            ProductOverlayType type);
 }

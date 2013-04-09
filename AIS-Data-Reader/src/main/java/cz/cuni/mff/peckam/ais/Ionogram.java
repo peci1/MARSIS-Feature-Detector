@@ -31,8 +31,9 @@
 package cz.cuni.mff.peckam.ais;
 
 import java.awt.Point;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.joda.time.DateTime;
 
@@ -110,7 +111,7 @@ public class Ionogram implements Product<Float, Float, Float>
     private final Float[]        columnKeys;
 
     /** The overlays. */
-    private final List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> overlays = new LinkedList<>();
+    private final Map<ProductOverlayType, ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> overlays                 = new HashMap<>();
 
     /** The referential result of feature detection. */
     private FrameType                                                                           referenceDetectionResult = null;
@@ -350,9 +351,9 @@ public class Ionogram implements Product<Float, Float, Float>
     }
 
     @Override
-    public List<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> getOverlays()
+    public Collection<ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>>> getOverlays()
     {
-        return overlays;
+        return overlays.values();
     }
 
     /**
@@ -362,7 +363,13 @@ public class Ionogram implements Product<Float, Float, Float>
      */
     public void addOverlay(ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> overlay)
     {
-        this.overlays.add(overlay);
+        this.overlays.put(overlay.getType(), overlay);
+    }
+
+    @Override
+    public ProductOverlay<?, Float, Float, ? extends Product<Float, Float, Float>> getOverlay(ProductOverlayType type)
+    {
+        return this.overlays.get(type);
     }
 
     @Override

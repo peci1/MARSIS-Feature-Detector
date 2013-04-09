@@ -32,8 +32,8 @@ package cz.cuni.mff.peckam.ais.gui;
 
 import java.awt.Color;
 
-import cz.cuni.mff.peckam.ais.AISLBLProductReader;
 import cz.cuni.mff.peckam.ais.ProductOverlay;
+import cz.cuni.mff.peckam.ais.ProductOverlayType;
 
 /**
  * Factory for creatign {@link OverlayRenderer}s.
@@ -50,12 +50,12 @@ public class OverlayRendererFactory
      */
     public OverlayRenderer createRenderer(ProductOverlay<?, ?, ?, ?> overlay)
     {
-        if (overlay.getType().equals(AISLBLProductReader.OVERLAY_TYPE_MANUAL)) {
-            return new SingleColorOverlayRenderer(Color.white);
-        } else if (overlay.getType().equals(AISLBLProductReader.OVERLAY_TYPE_AUTOMATIC)) {
+        if (overlay == null) {
+            return null;
+        } else if (overlay.getType() instanceof ProductOverlayType.Automatic) {
             return new SingleColorOverlayRenderer(Color.red);
         } else {
-            return null;
+            return new SingleColorOverlayRenderer(Color.white);
         }
     }
 }

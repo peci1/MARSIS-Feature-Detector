@@ -45,6 +45,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -60,8 +61,12 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import cz.cuni.mff.peckam.ais.AISLBLProductReader;
+import cz.cuni.mff.peckam.ais.AISResultOverlay;
 import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
+import cz.cuni.mff.peckam.ais.ProductOverlayType;
+import cz.cuni.mff.peckam.ais.result.FrameType;
+import cz.cuni.mff.peckam.ais.result.Orbit;
 
 /**
  * 
@@ -95,6 +100,8 @@ public class AISFrame
     private JCheckBox          evenSamplesCheckBox;
     /**  */
     private ActionListener     updateIonogramsAction;
+    /** Overlays. */
+    private JComboBox<ProductOverlayType> overlaysComboBox;
 
     /**
      * Launch the application.
@@ -148,6 +155,7 @@ public class AISFrame
                 lblFileInput.setEnabled(false);
                 evenSamplesCheckBox.setEnabled(false);
                 positionInSeriesComboBox.setEnabled(false);
+                overlaysComboBox.setEnabled(false);
 
                 renderer.setLoadingText("Loading the .LBL file...");
 
@@ -171,6 +179,7 @@ public class AISFrame
                         } catch (IOException | IllegalStateException e1) {
                             e1.printStackTrace();
                             positionInSeriesComboBox.setEnabled(false);
+                            overlaysComboBox.setEnabled(false);
                             JOptionPane.showMessageDialog(null, "The given file is not a valid .LBL file.");
                             renderer.setLoadingText("Loading the .LBL file has failed.");
                             lblFileInput.setEnabled(true);
@@ -200,6 +209,7 @@ public class AISFrame
 
                                 lblFileInput.setEnabled(true);
                                 evenSamplesCheckBox.setEnabled(true);
+                                overlaysComboBox.setEnabled(true);
                             }
 
                             renderer.setLoadingText(null);
@@ -209,6 +219,7 @@ public class AISFrame
                             lblFileInput.setEnabled(true);
                             evenSamplesCheckBox.setEnabled(false);
                             positionInSeriesComboBox.setEnabled(false);
+                            overlaysComboBox.setEnabled(false);
 
                             JOptionPane.showMessageDialog(null, "Couldn't load the given .LBL file.");
                         }
@@ -238,18 +249,31 @@ public class AISFrame
 
         final ColorScale<Float> colorScale = new BoundedLogarithmicColorScale<>((float) Ionogram.MIN_VALUE / 10f,
                 (float) Ionogram.MAX_VALUE);
-        positionInSeriesComboBox.addActionListener(new ActionListener() {
+        final ActionListener updateImageListener = new ActionListener() {
             @SuppressWarnings("synthetic-access")
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                renderer.setProductAndColorScale(getIonogram((int) positionInSeriesComboBox.getSelectedItem()),
-                        colorScale);
+                final Ionogram iono = getIonogram((int) positionInSeriesComboBox.getSelectedItem());
+                final ProductOverlayType type = (ProductOverlayType) overlaysComboBox.getSelectedItem();
+                if (iono.getOverlay(type) == null) {
+                    final Orbit result = ((ProductOverlayType) overlaysComboBox.getSelectedItem()).getResult(new File(
+                            lblFileInput.getPath()).getParentFile(), iono.getOrbitNumber());
+                    if (result != null) {
+                        final FrameType frame = result.getFrames()
+                                .get((int) positionInSeriesComboBox.getSelectedItem());
+                        iono.addOverlay(new AISResultOverlay(iono, frame, type));
+                    }
+                }
+
+                renderer.setProductAndColorScale(iono, colorScale, type);
                 updateSetMetadataLabel();
                 if (frmAisDataVisualizer.getExtendedState() == Frame.NORMAL)
                     frmAisDataVisualizer.pack();
             }
-        });
+        };
+        positionInSeriesComboBox.addActionListener(updateImageListener);
+        overlaysComboBox.addActionListener(updateImageListener);
     }
 
     /**
@@ -282,10 +306,11 @@ public class AISFrame
                 new FormLayout(new ColumnSpec[] { FormFactory.RELATED_GAP_COLSPEC, FormFactory.MIN_COLSPEC,
                         FormFactory.RELATED_GAP_COLSPEC, ColumnSpec.decode("default:grow"),
                         FormFactory.RELATED_GAP_COLSPEC, FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC,
-                        FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] {
-                        FormFactory.RELATED_GAP_ROWSPEC, FormFactory.DEFAULT_ROWSPEC, FormFactory.RELATED_GAP_ROWSPEC,
-                        RowSpec.decode("fill:default"), FormFactory.RELATED_GAP_ROWSPEC,
-                        RowSpec.decode("default:grow"), FormFactory.RELATED_GAP_ROWSPEC, }));
+                        FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC, FormFactory.PREF_COLSPEC,
+                        FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] { FormFactory.RELATED_GAP_ROWSPEC,
+                        FormFactory.DEFAULT_ROWSPEC, FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("fill:default"),
+                        FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
+                        FormFactory.RELATED_GAP_ROWSPEC, }));
 
         JLabel lblFileInputLabel = new JLabel(".LBL file to parse");
         frmAisDataVisualizer.getContentPane().add(lblFileInputLabel, "2, 2, left, fill");
@@ -307,8 +332,13 @@ public class AISFrame
         positionInSeriesComboBox.setModel(new DefaultComboBoxModel<>(new Integer[] {}));
         frmAisDataVisualizer.getContentPane().add(positionInSeriesComboBox, "8, 2, right, default");
 
+        overlaysComboBox = new JComboBox<>();
+        overlaysComboBox.setEnabled(false);
+        overlaysComboBox.setModel(getOverlaysModel());
+        frmAisDataVisualizer.getContentPane().add(overlaysComboBox, "10, 2, fill, default");
+
         renderer = new ProductRenderer();
-        frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 7, 1, fill, fill");
+        frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 9, 1, fill, fill");
 
         setMetadataLabel = new JLabel(" ");
         frmAisDataVisualizer.getContentPane().add(setMetadataLabel, "2, 4, 5, 1, fill, top");
@@ -320,6 +350,16 @@ public class AISFrame
     private void updateSetMetadataLabel()
     {
         setMetadataLabel.setText(renderer.getProduct().getMetadataString());
+    }
+
+    /**
+     * @return The overlays model.
+     */
+    protected ComboBoxModel<ProductOverlayType> getOverlaysModel()
+    {
+        return new DefaultComboBoxModel<>(new ProductOverlayType[] { new ProductOverlayType.Manual(),
+                new ProductOverlayType.SumsPeriodogram(), new ProductOverlayType.SumsFitting(),
+                new ProductOverlayType.SumsQuantile() });
     }
 
 }

@@ -45,7 +45,7 @@ import java.util.Map;
 public interface ProductOverlay<DataType, ColType, RowType, ProductType extends Product<?, ColType, RowType>>
 {
     /** The default overlay type. */
-    public static final String TYPE_DEFAULT = "default";
+    public static final ProductOverlayType TYPE_DEFAULT = new ProductOverlayType.Manual();
 
     /**
      * Return the value of this overlay at the specified coordinates in its product.
@@ -72,5 +72,5 @@ public interface ProductOverlay<DataType, ColType, RowType, ProductType extends 
      * @return The type of this field. It may be used to e.g. decide how to visualize the overlay. Defaults to
      *         {@link #TYPE_DEFAULT}.
      */
-    String getType();
+    ProductOverlayType getType();
 }

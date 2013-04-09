@@ -446,6 +446,12 @@ public class AISProduct implements Product<Float, Void, Float>
     }
 
     @Override
+    public ProductOverlay<?, Void, Float, ? extends Product<Float, Void, Float>> getOverlay(ProductOverlayType type)
+    {
+        return null;
+    }
+
+    @Override
     public Object getId()
     {
         return spaceCraftClock;

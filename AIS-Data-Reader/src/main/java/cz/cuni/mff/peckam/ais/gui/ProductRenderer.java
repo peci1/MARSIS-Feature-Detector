@@ -60,7 +60,7 @@ import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 
 import cz.cuni.mff.peckam.ais.Product;
-import cz.cuni.mff.peckam.ais.ProductOverlay;
+import cz.cuni.mff.peckam.ais.ProductOverlayType;
 
 /**
  * Renderer for data products.
@@ -107,6 +107,9 @@ public class ProductRenderer extends JPanel
 
     /** The factory creating overlay renderers. */
     private final OverlayRendererFactory overlayRendererFactory;
+
+    /** The displayed overlay type. */
+    private ProductOverlayType           overlayType             = null;
 
     // initializer
     {
@@ -209,12 +212,11 @@ public class ProductRenderer extends JPanel
      * @param <R> Type of the row keys.
      * @param product The product to render.
      * @param colorScale The color scale used to render the product.
+     * @param overlayType Type of overlay to render.
      */
     public <N extends Number, C, R> void setProductAndColorScale(final Product<N, C, R> product,
-            final ColorScale<N> colorScale)
+            final ColorScale<N> colorScale, ProductOverlayType overlayType)
     {
-        setLoadingText("Switching the displayed data...");
-
         final Product<?, ?, ?> oldProduct = this.product;
         this.product = product;
         firePropertyChange("product", oldProduct, product);
@@ -223,6 +225,21 @@ public class ProductRenderer extends JPanel
         this.colorScale = colorScale;
         firePropertyChange("colorScale", oldScale, colorScale);
 
+        this.overlayType = overlayType;
+
+        updateImage(product, colorScale);
+    }
+
+    /**
+     * @param <N> The numeric type of the product.
+     * @param <C> Type of the column keys.
+     * @param <R> Type of the row keys.
+     * @param product The product to render.
+     * @param colorScale The color scale used to render the product.
+     */
+    protected <N extends Number, C, R> void updateImage(final Product<N, C, R> product, final ColorScale<N> colorScale)
+    {
+        setLoadingText("Switching the displayed data...");
         setPreferredSize(new Dimension(product.getWidth(), product.getHeight() + HORIZONTAL_SCALE_HEIGHT));
 
         new SwingWorker<BufferedImage, Void>() {
@@ -242,9 +259,11 @@ public class ProductRenderer extends JPanel
                 }
                 image.setRGB(0, 0, w, h, imageData, 0, w);
 
-                for (ProductOverlay<?, C, R, ?> overlay : product.getOverlays()) {
-                    final OverlayRenderer renderer = overlayRendererFactory.createRenderer(overlay);
-                    renderer.render(image, overlay, product);
+                if (overlayType != null && product.getOverlay(overlayType) != null) {
+                    final OverlayRenderer renderer = overlayRendererFactory.createRenderer(product
+                            .getOverlay(overlayType));
+                    if (renderer != null)
+                        renderer.render(image, product.getOverlay(overlayType), product);
                 }
 
                 prevNumLabelLevels = null;
