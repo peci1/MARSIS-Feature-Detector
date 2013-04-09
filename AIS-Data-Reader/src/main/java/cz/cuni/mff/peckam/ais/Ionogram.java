@@ -245,6 +245,14 @@ public class Ionogram implements Product<Float, Float, Float>
         return columnKeys;
     }
 
+    /**
+     * @return The column keys of the unevenly sampled ionogram.
+     */
+    public Float[] getOriginalColumnKeys()
+    {
+        return columnKeys;
+    }
+
     @Override
     public Float[] getRowKeys()
     {

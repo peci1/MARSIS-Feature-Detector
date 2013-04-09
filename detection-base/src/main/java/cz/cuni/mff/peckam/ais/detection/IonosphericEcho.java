@@ -68,7 +68,7 @@ public class IonosphericEcho extends GeneralCurve
     public String toString()
     {
         if (startFreq != null && endFreq != null) {
-            return String.format("Ionospheric echo from %d MHz to %d MHz with %d points", startFreq, endFreq,
+            return String.format("Ionospheric echo from %f MHz to %f MHz with %d points", startFreq, endFreq,
                     getPoints().length);
         } else {
             return String.format("Ionospheric echo from %d px to %d px with %d points", getPoints()[0].x,
@@ -81,9 +81,9 @@ public class IonosphericEcho extends GeneralCurve
     {
         if (product instanceof Ionogram) {
             final Ionogram iono = (Ionogram) product;
-            startFreq = iono.getMinColumnValue() + (getPoints()[0].x / iono.getWidth())
+            startFreq = iono.getMinColumnValue() + (getPoints()[0].x / (double) iono.getWidth())
                     * (iono.getMaxColumnValue() - iono.getMinColumnValue());
-            endFreq = iono.getMinColumnValue() + (getPoints()[getPoints().length - 1].x / iono.getWidth())
+            endFreq = iono.getMinColumnValue() + (getPoints()[getPoints().length - 1].x / (double) iono.getWidth())
                     * (iono.getMaxColumnValue() - iono.getMinColumnValue());
         }
     }

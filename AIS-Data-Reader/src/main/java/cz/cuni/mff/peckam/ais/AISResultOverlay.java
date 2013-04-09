@@ -76,15 +76,32 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
             }
         }
 
+        if (resultData.getGroundtrace() != null && !resultData.getGroundtrace().getPoints().isEmpty()) {
+            for (PointType point : resultData.getGroundtrace().getPoints()) {
+                values.put(new Tuple<>(point.getY(), point.getX()), true);
+            }
+        }
+
         if (resultData.getHperiod() != null && resultData.getHperiod() != 0f) {
             float period = resultData.getHperiod();
             while (period <= ionogram.getMaxColumnValue()) {
                 if (period >= ionogram.getMinColumnValue()) {
                     for (int i = 0; i < 8; i++) {
-                        values.put(
-                                new Tuple<>((float) (1.001f * ionogram.getMinRowValue() + i * ionogram.getRowHeight()),
-                                period),
-                                true);
+                        final float t = ionogram.getFreqTimePosition(0, i).getY();
+                        values.put(new Tuple<>(t, period), true);
+                    }
+                }
+                period += resultData.getHperiod();
+            }
+        }
+
+        if (resultData.getVperiod() != null && resultData.getVperiod() != 0f) {
+            float period = resultData.getVperiod();
+            while (period <= ionogram.getMaxRowValue()) {
+                if (period >= ionogram.getMinRowValue()) {
+                    for (int i = 0; i < 8; i++) {
+                        final float f = ionogram.getFreqTimePosition(i, 0).getX();
+                        values.put(new Tuple<>(f, period), true);
                     }
                 }
                 period += resultData.getHperiod();

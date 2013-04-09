@@ -30,6 +30,12 @@
  */
 package cz.cuni.mff.peckam.ais.detection;
 
+import java.awt.Point;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import cz.cuni.mff.peckam.ais.Ionogram;
 import cz.cuni.mff.peckam.ais.Product;
 
 /**
@@ -52,6 +58,96 @@ public abstract class FloatFeatureDetector extends FeatureDetectorBase<Float>
         }
         final float mean = sum / (data.length * data[0].length);
         return mean >= 2.45216E-16;
+    }
+
+    @Override
+    public DetectionResult detectFeatures(Product<Float, ?, ?> product)
+    {
+        final DetectionResult result = super.detectFeatures(product);
+
+        if (product instanceof Ionogram) {
+            final Ionogram iono = (Ionogram) product;
+            if (iono.getAltitude() != null) {
+                final DetectedFeature echo = detectGroundEcho(iono, iono.getAltitude());
+                if (echo != null) {
+                    result.addFeature(echo);
+                    result.readProductData(iono);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * @param product The product.
+     * @param altitude Altitude over ground in km.
+     * @return The ground echo.
+     */
+    protected DetectedFeature detectGroundEcho(Ionogram product, float altitude)
+    {
+        final Float[][] data = product.getData();
+        final float timeDelay = 2 * altitude / 300; // 300 for speed of light; timeDelay in ms
+
+        if (timeDelay < Ionogram.MIN_DELAY_TIME || timeDelay > Ionogram.MAX_DELAY_TIME)
+            return null;
+
+        final int yPosition = product.getDataPosition(timeDelay, (float) Ionogram.MAX_FREQUENCY).x;
+
+        float noEchoSum = 0, echoSum = 0;
+        int noEchoCount = 0, echoCount = 0;
+
+        for (int x = data.length / 2; x < data.length; x++) {
+            for (int y = 0; y < data[0].length; y++) {
+                final float val = data[x][y];
+                if (y >= yPosition && y < yPosition + 20) {
+                    echoSum += val;
+                    echoCount++;
+                } else {
+                    noEchoSum += val;
+                    noEchoCount++;
+                }
+            }
+        }
+
+        if (echoCount == 0 || noEchoCount == 0) // should not happen
+            return null;
+
+        final float echoMean = echoSum / echoCount;
+        final float noEchoMean = noEchoSum / noEchoCount;
+
+        if (echoMean > 2 * noEchoMean) {
+            final List<Point> points = new LinkedList<>();
+            int y = yPosition;
+            final Float[] colKeys = product.getOriginalColumnKeys();
+            for (int xx = colKeys.length - 1; xx >= 0; xx--) {
+                final int x = product.getDataPosition((float) Ionogram.MIN_DELAY_TIME,
+                        (float) Math.min(colKeys[xx], Ionogram.MAX_FREQUENCY)).y;
+                if (x < data.length / 2)
+                    break;
+
+                float max = 0;
+                int maxY = -1;
+                for (int yy = Math.min(y + 10, data[0].length - 1); yy >= y - 10; yy--) {
+                    if (data[x][yy] > max) {
+                        max = data[x][yy];
+                        maxY = yy;
+                    }
+                }
+
+                if (maxY < 0)
+                    break;
+
+                y = maxY;
+                if (max >= echoMean)
+                    points.add(new Point(x, y));
+            }
+
+            Collections.reverse(points);
+            return new GroundEcho(points.toArray(new Point[0]));
+        }
+
+        return null;
     }
 
 }
