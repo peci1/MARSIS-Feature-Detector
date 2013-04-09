@@ -143,6 +143,9 @@ public abstract class FloatFeatureDetector extends FeatureDetectorBase<Float>
                     points.add(new Point(x, y));
             }
 
+            if (points.isEmpty())
+                return null;
+
             Collections.reverse(points);
             return new GroundEcho(points.toArray(new Point[0]));
         }
