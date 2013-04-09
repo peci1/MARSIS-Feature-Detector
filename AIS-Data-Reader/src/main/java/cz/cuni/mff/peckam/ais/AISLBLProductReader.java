@@ -74,6 +74,7 @@ public class AISLBLProductReader
      * 
      * @throws IOException On file read error.
      */
+    @SuppressWarnings("resource")
     public Ionogram[] readFile(File lblFile) throws IOException
     {
         {
@@ -128,13 +129,26 @@ public class AISLBLProductReader
         if (products.length != file_records)
             throw new IllegalStateException("FILE_RECORDS from .LBL doesn't match number of records in ^AIS_TABLE");
 
+        final File altitudeFile = new File(lblFile.getParent(), "EPHEMERIS_" + orbit_number + ".TXT");
+        BufferedReader altitudeReader = null;
+        if (altitudeFile.exists())
+            altitudeReader = new BufferedReader(new FileReader(altitudeFile));
+
         for (int i = 0; i < result.length; i++) {
             AISProduct[] columns = new AISProduct[NUM_COLUMNS];
             for (int j = 0; j < NUM_COLUMNS; j++) {
                 columns[j] = products[i * NUM_COLUMNS + j];
             }
-            result[i] = new Ionogram(columns, orbit_number, i);
+
+            Float altitude = null;
+            if (altitudeReader != null) {
+                altitude = Float.parseFloat(altitudeReader.readLine());
+            }
+            result[i] = new Ionogram(columns, orbit_number, i, altitude);
         }
+
+        if (altitudeReader != null)
+            altitudeReader.close();
 
         { // add AIS detection result overlay
             final File resultsFile = new File(lblFile.getParent(), "TRACE_" + orbit_number + ".XML");

@@ -64,7 +64,7 @@ public class EvenlySampledIonogram extends Ionogram
      */
     public EvenlySampledIonogram(Ionogram original)
     {
-        super(original.getColumns(), original.getOrbitNumber(), original.getPositionInSeries());
+        super(original.getColumns(), original.getOrbitNumber(), original.getPositionInSeries(), original.getAltitude());
 
         final int width = computeIdealNumOfFreqSamples(original);
         final int height = width / 2; // to maintain aspect ratio from original

@@ -103,6 +103,9 @@ public class Ionogram implements Product<Float, Float, Float>
     /** The data. */
     private Float[][]                                                                           data;
 
+    /** Altitude over surface. */
+    private final Float                                                                         altitude;
+
     /** Keys - the column frequencies. */
     private final Float[]        columnKeys;
 
@@ -121,8 +124,9 @@ public class Ionogram implements Product<Float, Float, Float>
      * @param columns Data columns.
      * @param orbitNumber The orbit number.
      * @param positionInSeries Position of this data set in the series read from a single AIS data file.
+     * @param altitude Altitude over surface.
      */
-    public Ionogram(AISProduct[] columns, int orbitNumber, int positionInSeries)
+    public Ionogram(AISProduct[] columns, int orbitNumber, int positionInSeries, Float altitude)
     {
         this.columns = columns;
         this.orbitNumber = orbitNumber;
@@ -138,6 +142,8 @@ public class Ionogram implements Product<Float, Float, Float>
         this.frequencyTableNumber = columns[0].getFrequencyTableNumber();
         this.startTime = columns[0].getSpaceCraftClock();
         this.yCoef = (float) (DELAY_TIME_RANGE / getHeight());
+        this.altitude = altitude;
+
     }
 
     /**
@@ -152,6 +158,14 @@ public class Ionogram implements Product<Float, Float, Float>
     public Float[][] getData()
     {
         return data;
+    }
+
+    /**
+     * @return Altitude over surface.
+     */
+    public Float getAltitude()
+    {
+        return altitude;
     }
 
     /**
