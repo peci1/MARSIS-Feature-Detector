@@ -15,7 +15,7 @@ As we are going to detect repetitious features, the ionogram with unevenly distr
   \item Then we perform the same interpolation vertically to fill missing values in columns. The final evenly sampled ionogram can be found in Fig. \ref{fig:even_uneven_iono}.
 \end{itemize}
 
-This interpolation of course does not add any new information to the image, but it allows us to work on an image with both axes in uniform linear scale. We have chosen this kind of interpolation because it gives results very similar to the referential renderings available at \citep{FTP}. Nonetheless, any other kind of interpolation of missing pixels can be used as long as it preserves the values corresponding to the ``original pixels''.
+This interpolation of course does not add any new information to the image, but it allows us to work on an image with both axes in uniform linear scale. We have chosen this kind of interpolation because it is the one used in the referential renderings available at \citep{FTP}. We have simplified it by not caring about the values near edges, because they have insignificant impact on the results of detection. Nonetheless, any other kind of interpolation of missing pixels can be used as long as it preserves the values corresponding to the ``original pixels'' (e.g. plain pixel enlargement with copying the values instead of interpolating them).
 
 \begin{figure}[H]
 	\centering
