@@ -18,6 +18,7 @@
 	<module>AIS-Result-Converter</module>
 	<module>detector-summing</module>
 	<module>statistics</module>
+	<module>result-comparator</module>
     </modules>
 
     <build>
