@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 
 import org.apache.commons.math3.analysis.function.HarmonicOscillator.Parametric;
 import org.apache.commons.math3.exception.DimensionMismatchException;
@@ -66,7 +68,7 @@ public class SummingDetector extends FloatFeatureDetector
 {
 
     /** The strategy used for computing. */
-    private ComputationStrategy strategy = ComputationStrategy.QUANTILE_PEAK_DISTANCE_ESTIMATION;
+    private ComputationStrategy strategy = ComputationStrategy.PERIODOGRAM;
 
     /**
      * The strategy used for computation.
@@ -83,29 +85,32 @@ public class SummingDetector extends FloatFeatureDetector
         PERIODOGRAM
         {
             @Override
-            Tuple<Integer, Double> computePeriod(float[] peaks, float[] weights)
+            Tuple<Integer, Double[]> computePeriod(float[] peaks, float[] weights)
             {
                 // variable names from (Scargle, 1982)
                 final int n0 = peaks.length, t = n0;
-                double bestFreq = 0;
-                double bestValue = -Float.MAX_VALUE;
-                float[] periodogram = new float[n0];
+                final NavigableMap<Double, Double> periodogram = new TreeMap<>();
                 // the selection of n is such that we get periods lower than width/2 and higher than the lowest
                 // detectable period
                 for (int n = (int) (t / getMinPeakDistance(peaks)); n <= n0 / 2; n++) {
                     final double freq = 2 * PI * n / t;
                     final double periodogramVal = computePeriodogram(freq, peaks);
-                    periodogram[n - 1] = (float) periodogramVal;
-                    if (periodogramVal > bestValue) {
-                        bestValue = periodogramVal;
-                        bestFreq = freq;
-                    }
+                    periodogram.put(periodogramVal, freq);
                 }
 
+                if (periodogram.size() == 0)
+                    return null;
+
+                final Double[] periods = new Double[Math.min(10, periodogram.size())];
+                int i = 0;
+                for (double freq : periodogram.descendingMap().values()) {
+                    if (i < periods.length) {
+                        periods[i++] = 2 * PI / freq;
+                    }
+                }
                 // bestFreq contains the frequency with the highest periodogram peak, which should correspond to the
                 // most probable frequency
-                final double period = 2 * PI / bestFreq;
-                return new Tuple<>(null, period);
+                return new Tuple<>(null, periods);
             }
 
             /**
@@ -168,7 +173,7 @@ public class SummingDetector extends FloatFeatureDetector
         {
 
             @Override
-            Tuple<Integer, Double> computePeriod(final float[] peaks, float[] weights)
+            Tuple<Integer, Double[]> computePeriod(final float[] peaks, float[] weights)
             {
                 final HarmonicFitter fitter = new HarmonicFitter(new LevenbergMarquardtOptimizer());
 
@@ -232,7 +237,7 @@ public class SummingDetector extends FloatFeatureDetector
                 final double[] fit = fitter.fit(func, guess);
                 final double period = 2 * PI / fit[1];
                 final double phase = fit[2];
-                return new Tuple<>((int) phase, period);
+                return new Tuple<>((int) phase, new Double[] { period });
             }
 
             @Override
@@ -251,7 +256,7 @@ public class SummingDetector extends FloatFeatureDetector
         {
 
             @Override
-            Tuple<Integer, Double> computePeriod(float[] peaks, float[] weights)
+            Tuple<Integer, Double[]> computePeriod(float[] peaks, float[] weights)
             {
                 // compute peak distances and interpolate weights for them
                 final List<Integer> dists = new ArrayList<>();
@@ -270,7 +275,7 @@ public class SummingDetector extends FloatFeatureDetector
                 if (dists.size() == 0)
                     return null;
                 else if (dists.size() == 1)
-                    return new Tuple<>(null, (double) dists.get(0));
+                    return new Tuple<>(null, new Double[] { (double) dists.get(0) });
 
                 // convert to double[] for use with Commons Math
                 final double[] distances = new double[dists.size()];
@@ -296,7 +301,7 @@ public class SummingDetector extends FloatFeatureDetector
                 // perform a weighted sum of all the distances left after the previous step
                 final double period = nearMedians.length > 1 ? MathArrays.linearCombination(nearMedians,
                         MathArrays.normalizeArray(nearMedianWeights, 1)) : nearMedians[0];
-                return new Tuple<>(null, period);
+                return new Tuple<>(null, new Double[] { period });
             }
 
             @Override
@@ -311,9 +316,10 @@ public class SummingDetector extends FloatFeatureDetector
          * 
          * @param peaks The normalized peaks and zeros elsewhere.
          * @param weights Weights of the peaks.
-         * @return The period of the peaks. <code>null</code> if no period is present.
+         * @return The period of the peaks. <code>null</code> if no period is present. More possible periods may be
+         *         returned.
          */
-        abstract Tuple<Integer, Double> computePeriod(float[] peaks, float[] weights);
+        abstract Tuple<Integer, Double[]> computePeriod(float[] peaks, float[] weights);
     }
 
     @Override
@@ -373,7 +379,63 @@ public class SummingDetector extends FloatFeatureDetector
             }
         }
 
-        return strategy.computePeriod(peaks, weights);
+        final Tuple<Integer, Double[]> strategyResult = strategy.computePeriod(peaks, weights);
+        if (strategyResult != null)
+            return pickBestResult(strategyResult, sums);
+        return null;
+    }
+
+    /**
+     * Pick the best result.
+     * 
+     * @param results The results.
+     * @param sums The sums.
+     * @return The best result.
+     */
+    private Tuple<Integer, Double> pickBestResult(Tuple<Integer, Double[]> results, float[] sums)
+    {
+        if (results.getY().length == 1)
+            return new Tuple<>(results.getX(), results.getY()[0]);
+
+        final Double[] ys = results.getY();
+        final Integer offset = results.getX();
+
+        double bestY = 0;
+        double bestValue = 0;
+        for (double y : ys) {
+            final double value = getPeriodQuality(offset != null ? offset : 0, y, sums);
+            if (value > bestValue) {
+                bestValue = value;
+                bestY = y;
+            }
+        }
+
+        return new Tuple<>(offset, bestY);
+    }
+
+    /**
+     * @param offset offset
+     * @param period period
+     * @param sums sums
+     * @return quality
+     */
+    private double getPeriodQuality(int offset, double period, float[] sums)
+    {
+        int repeats = 0;
+        double sum = 0;
+        int prevI = Integer.MIN_VALUE;
+        for (double i = offset; i < sums.length; i += period) {
+            if (i >= 0 && ((int) i) != prevI) { // offset may be negative
+                repeats++;
+                prevI = (int) i;
+                sum += sums[(int) i];
+            }
+        }
+
+        if (repeats == 0)
+            return 0;
+
+        return sum / repeats;
     }
 
     /**
@@ -384,9 +446,9 @@ public class SummingDetector extends FloatFeatureDetector
     private void filterPeaks(float[] peaks)
     {
         // filter out all values that are not local maxima
-        for (int i = 1; i < peaks.length - 1; i++) {
-            if (peaks[i - 1] <= peaks[i] && peaks[i + 1] <= peaks[i]) {
-                { // set j to the leftmost end of a nonincreasing part left from i
+        for (int i = 0; i < peaks.length - 1; i++) {
+            if ((i == 0 || peaks[i - 1] <= peaks[i]) && peaks[i + 1] <= peaks[i]) {
+                if (i > 0) { // set j to the leftmost end of a nonincreasing part left from i
                     int j = i - 1;
                     while (j > 0 && peaks[j] > 0 && peaks[j] <= peaks[j + 1])
                         j--;
