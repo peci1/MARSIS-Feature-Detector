@@ -188,4 +188,30 @@ public abstract class ProductOverlayType
             return "Row/column sums+quantile";
         }
     }
+
+    /**
+     * Row/col sums w/ combined method.
+     * 
+     * @author Martin Pecka
+     */
+    public static class SumsCombined extends ProductOverlayType implements Automatic
+    {
+
+        @Override
+        public Orbit getResultImpl(File baseFolder, int orbit)
+        {
+            try {
+                return reader.readResult(new File(baseFolder, "TRACE_" + orbit + "_SUM_COMBINED.XML"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            return "Row/column sums combined";
+        }
+    }
 }

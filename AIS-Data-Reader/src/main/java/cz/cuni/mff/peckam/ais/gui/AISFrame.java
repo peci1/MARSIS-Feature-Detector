@@ -359,7 +359,7 @@ public class AISFrame
     {
         return new DefaultComboBoxModel<>(new ProductOverlayType[] { new ProductOverlayType.Manual(),
                 new ProductOverlayType.SumsPeriodogram(), new ProductOverlayType.SumsFitting(),
-                new ProductOverlayType.SumsQuantile() });
+                new ProductOverlayType.SumsQuantile(), new ProductOverlayType.SumsCombined() });
     }
 
 }

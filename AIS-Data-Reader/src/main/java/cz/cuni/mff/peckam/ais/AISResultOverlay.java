@@ -46,10 +46,10 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
 
     /** The data of the overlay. */
     @SuppressWarnings("unused")
-    private final FrameType resultData;
+    private final FrameType                         resultData;
 
     /** The overlaid ionogram. */
-    private final Ionogram  ionogram;
+    private final Ionogram                          ionogram;
 
     /** The overlay values. */
     private final Map<Tuple<Float, Float>, Boolean> values;
@@ -72,13 +72,13 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
 
         if (resultData.getIonospheretrace() != null && !resultData.getIonospheretrace().getPoints().isEmpty()) {
             for (PointType point : resultData.getIonospheretrace().getPoints()) {
-                values.put(new Tuple<>(point.getY(), point.getX()), true);
+                addPoint(point.getY(), point.getX());
             }
         }
 
         if (resultData.getGroundtrace() != null && !resultData.getGroundtrace().getPoints().isEmpty()) {
             for (PointType point : resultData.getGroundtrace().getPoints()) {
-                values.put(new Tuple<>(point.getY(), point.getX()), true);
+                addPoint(point.getY(), point.getX());
             }
         }
 
@@ -88,7 +88,7 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
                 if (period >= ionogram.getMinColumnValue()) {
                     for (int i = 0; i < 8; i++) {
                         final float t = ionogram.getFreqTimePosition(0, i).getY();
-                        values.put(new Tuple<>(t, period), true);
+                        addPoint(t, period);
                     }
                 }
                 period += resultData.getHperiod();
@@ -101,12 +101,23 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
                 if (period >= ionogram.getMinRowValue()) {
                     for (int i = 0; i < 8; i++) {
                         final float f = ionogram.getFreqTimePosition(i, 0).getX();
-                        values.put(new Tuple<>(period, f), true);
+                        addPoint(period, f);
                     }
                 }
                 period += resultData.getVperiod();
             }
         }
+    }
+
+    /**
+     * Adds the given point to this.values.
+     * 
+     * @param delay Time position.
+     * @param frequency Frequency position.
+     */
+    private void addPoint(float delay, float frequency)
+    {
+        values.put(new Tuple<>(delay, frequency), true);
     }
 
     @Override

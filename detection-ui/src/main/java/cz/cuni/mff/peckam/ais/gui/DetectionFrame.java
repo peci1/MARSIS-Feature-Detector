@@ -179,6 +179,7 @@ public class DetectionFrame
         detectorPresentations.add(new SummingDetectorPresentation(ComputationStrategy.HARMONICS_FITTING));
         detectorPresentations
                 .add(new SummingDetectorPresentation(ComputationStrategy.QUANTILE_PEAK_DISTANCE_ESTIMATION));
+        detectorPresentations.add(new SummingDetectorPresentation(ComputationStrategy.COMBINED_QUANTILE_PERIODOGRAM));
     }
 
     /**

@@ -68,7 +68,7 @@ public class SummingDetector extends FloatFeatureDetector
 {
 
     /** The strategy used for computing. */
-    private ComputationStrategy strategy = ComputationStrategy.PERIODOGRAM;
+    private ComputationStrategy strategy = ComputationStrategy.COMBINED_QUANTILE_PERIODOGRAM;
 
     /**
      * The strategy used for computation.
@@ -189,13 +189,9 @@ public class SummingDetector extends FloatFeatureDetector
                     fitter.addObservedPoint(newWeights[i] > 0 ? newWeights[i] : 0.001, i, peaks[i]);
                 }
 
-                // guess initial values for the fitting and set amplitude to 1 (since we want the result to have
-                // amplitude 1)
-                final double[] guess = new HarmonicFitter.ParameterGuesser(fitter.getObservations()).guess();
-                guess[0] = 1;
-
                 // the fitter cannot handle parameter constraints, so we extend the Harmonic function to return a big
-                // negative number for all parameters we don't like (e.g. amplitude != 1, frequency is too big/small).
+                // negative number for all parameters we don't like (frequency is too big/small). We also need this to
+                // be a wave with unit amplitude.
                 final Parametric func = new Parametric() {
                     /** The maximum period we can detect is half of the data width. */
                     private final double minFreq = 2 * PI / (peaks.length / 2);
@@ -207,36 +203,44 @@ public class SummingDetector extends FloatFeatureDetector
                     public double value(double x, double... param) throws NullArgumentException,
                             DimensionMismatchException
                     {
-                        if (!allowedParams(param))
-                            return -100;
-                        return super.value(x, param);
+                        validateParameters(param);
+                        if (param[0] < minFreq || param[0] > maxFreq)
+                            return -1;
+                        return FastMath.cos(x * param[0] + param[1]);
                     }
 
                     @Override
                     public double[] gradient(double x, double... param) throws NullArgumentException,
                             DimensionMismatchException
                     {
-                        final double[] result = super.gradient(x, param);
-                        if (!allowedParams(param)) {
-                            // try to direct the fitter to the wanted parameter values using the derivative
-                            final double da = param[0] > 1 ? -10 : param[0] < 1 ? 1 : 0;
-                            final double df = param[1] < minFreq ? 10 : param[1] > maxFreq ? -10 : result[1];
-                            return new double[] { da, df, result[2] };
-
-                        }
-                        return result;
+                        validateParameters(param);
+                        final double dp = -FastMath.sin(x * param[0] + param[1]);
+                        // try to direct the fitter to the wanted parameter values using the derivative
+                        final double df = param[0] < minFreq ? 1 : param[0] > maxFreq ? -1 : dp * x;
+                        return new double[] { df, dp };
                     }
 
-                    private boolean allowedParams(double[] params)
+                    private void validateParameters(double[] param) throws NullArgumentException,
+                            DimensionMismatchException
                     {
-                        return params[1] >= minFreq && params[1] <= maxFreq && FastMath.abs(params[0] - 1) < 0.1;
+                        if (param == null) {
+                            throw new NullArgumentException();
+                        }
+                        if (param.length != 2) {
+                            throw new DimensionMismatchException(param.length, 2);
+                        }
                     }
                 };
 
+                // guess initial values for the fitting
+                final double[] guess = new HarmonicFitter.ParameterGuesser(fitter.getObservations()).guess();
+
                 // perform the fitting
-                final double[] fit = fitter.fit(func, guess);
-                final double period = 2 * PI / fit[1];
-                final double phase = fit[2];
+                final double[] fit = fitter.fit(func, new double[] { guess[1], guess[2] });
+                final double freq = (fit[0] % (2 * PI) + 2 * PI) % (2 * PI); // to get always positive freq in <0; 2pi)
+                final double period = 2 * PI / freq;
+                final double phase = ((fit[1] % period) + period) % period;
+                // System.err.println("s=Sin[" + freq + "x+" + phase + "];");
                 return new Tuple<>((int) phase, new Double[] { period });
             }
 
@@ -301,6 +305,7 @@ public class SummingDetector extends FloatFeatureDetector
                 // perform a weighted sum of all the distances left after the previous step
                 final double period = nearMedians.length > 1 ? MathArrays.linearCombination(nearMedians,
                         MathArrays.normalizeArray(nearMedianWeights, 1)) : nearMedians[0];
+
                 return new Tuple<>(null, new Double[] { period });
             }
 
@@ -309,6 +314,42 @@ public class SummingDetector extends FloatFeatureDetector
             {
                 return "quantile";
             }
+        },
+
+        /**
+         * Combined results of the quantile peak estimation and the periodogram method.
+         * 
+         * @author Martin Pecka
+         */
+        COMBINED_QUANTILE_PERIODOGRAM
+        {
+
+            @Override
+            Tuple<Integer, Double[]> computePeriod(float[] peaks, float[] weights)
+            {
+                final Tuple<Integer, Double[]> perResult = PERIODOGRAM.computePeriod(peaks, weights);
+                if (perResult == null || perResult.getY().length == 0)
+                    return null;
+
+                final Tuple<Integer, Double[]> quantResult = QUANTILE_PEAK_DISTANCE_ESTIMATION.computePeriod(peaks,
+                        weights);
+                if (quantResult == null || quantResult.getY().length == 0)
+                    return null;
+
+                double periodPer = perResult.getY()[0];
+                double periodQuant = quantResult.getY()[0];
+
+                // the whole multiplier of periodPer which gets it nearest to periodQuant
+                int multiplier = (int) Math.round(periodQuant / periodPer);
+                return new Tuple<>(null, new Double[] { 0.5 * periodQuant + 0.5 * periodPer * multiplier });
+            }
+
+            @Override
+            public String toString()
+            {
+                return "combined";
+            }
+
         };
 
         /**

@@ -35,6 +35,7 @@ import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.Map.Entry;
 
+import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Product;
 import cz.cuni.mff.peckam.ais.ProductOverlay;
 import cz.cuni.mff.peckam.ais.Tuple;
@@ -62,11 +63,20 @@ public class SingleColorOverlayRenderer implements OverlayRenderer
     public <ColType, RowType> void render(BufferedImage image, ProductOverlay<?, ColType, RowType, ?> overlay,
             Product<?, ColType, RowType> product)
     {
+        final int w = image.getWidth(), h = image.getHeight();
         for (Entry<Tuple<RowType, ColType>, ?> entry : overlay.getValues().entrySet()) {
             if (entry.getValue() != null) {
                 final Tuple<RowType, ColType> key = entry.getKey();
                 final Point point = product.getDataPosition(key.getX(), key.getY());
                 image.setRGB(point.y, point.x, color);
+                if (product instanceof EvenlySampledIonogram) {
+                    final int minX = Math.max(0, point.y - 1), maxX = Math.min(w - 1, point.y + 1), minY = Math.max(0,
+                            point.x - 1), maxY = Math.min(h - 1, point.x + 1);
+                    image.setRGB(minX, point.x, color);
+                    image.setRGB(maxX, point.x, color);
+                    image.setRGB(point.y, minY, color);
+                    image.setRGB(point.y, maxY, color);
+                }
             }
         }
     }
