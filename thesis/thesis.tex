@@ -66,6 +66,8 @@
 \DeclareUrlCommand\url{\def\UrlLeft{<}\def\UrlRight{>} \urlstyle{tt}}
 \usepackage[nottoc]{tocbibind}
 
+\usepackage[super]{nth}
+
 \usepackage{todonotes}
 \usepackage{epstopdf}
 \usepackage{upgreek}
@@ -294,10 +296,11 @@ pattern~recognition, object~detection, parametric~curves, Mars~Express, vectoriz
 \bibliography{bibliography_mendeley,bibliography_custom} 
 
 %%% Tabulky v diplomové práci, existují-li.
-\chapwithtoc{List of Tables}
+\chapwithtoc{List of Tables} %%TODO???
 
 %%% Použité zkratky v diplomové práci, existují-li, vèetnì jejich vysvìtlení.
 \chapwithtoc{List of Abbreviations}
+%%TODO
 
 \include{attachments}
 
