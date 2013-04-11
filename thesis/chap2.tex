@@ -25,7 +25,7 @@ This interpolation of course does not add any new information to the image, but 
 \end{figure}
 
 \subsection{Specification of the features to detect}
-\label{ssec:results_spec}
+\label{ssec:features_spec}
 We have listed four features of interest - ionospheric echoes (IE), ground echoes (GE), electron plasma oscillation harmonics (EPOH) and electron cyclotron harmonics (ECH) (in Section \ref{ssec:oblique} we have already stated we omit oblique ionospheric echoes). We detect them based on the fact that they correspond to areas with significantly higher ionogram values than the background. However, ionograms are often very noisy, so it would be difficult (if not impossible) to define a single absolute threshold for telling whether a pixel belongs to a feature or not. 
 
 For verification purposes we obtained \n{115495} manually tagged ionograms from the Department of Surface and Plasma Science at Faculty of Mathematics and Physics, Charles University. These data come from \n{1014} orbits during year 2007 (all orbits that year with some MARSIS data). In most of these ionograms the horizontal repeat period (corresponding to EPOH) is measured manually and the ionospheric echoes are marked. If no horizontal repetition period is present, that fact is recorded, too. Ionospheric echoes are marked in most cases. Unfortunately, we have no data for vertical periods or ground echoes (however, the latter seem to be detected very easily). Although being done manually and thus each feature being assessed subjectively, we deduced our rules for distinguishing interesting lines (which are either a feature or a part of a feature). Such line is several pixels wide (cca. 3--\n[px]{20}) and at least that much pixels long (assuming the ionogram has dimension \n{1012}x\n[px]{506}). Values on its skeleton (center line) are at least 10 times higher than those at its border. A line is also allowed to contain ``gaps'', but no more than a third of the line's length in sum. Moreover, every line should contain a value higher than cca. \n{5E-15} (but not all points with higher values belong to a feature). Such definition looks, however, vague. So we propose additional specific constraints implying from the features we try to detect in our experiments. 
@@ -44,6 +44,7 @@ We also computed other statistical properties of ionograms that could help us be
 \end{figure}
 
 \subsection{Specification of the detection results}
+\label{ssec:results_spec}
 Having an idea about how to recognize a feature, we can finally define the form of the results of our detection. Here it is important to declare we are not interested in the graphical shapes, rather we want to get results directly applicable in the physical models described in Section \ref{sec:ionograms}. 
 
 From Section \ref{ssec:epoh} follows that to get the local electron plasma frequency from EPOH, it is sufficient to have the period of the harmonics. It is not important how long or wide the harmonic echoes are, only the period of repetition. We  denote this period as ``hPeriod'' (horizontal period) and measure it\footnote{It may seem a little confusing to show a period in MHz, but it should rather be looked at as the difference of two sounding frequencies producing echoes.} in MHz.
