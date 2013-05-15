@@ -67,6 +67,7 @@ import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.RowSpec;
 
 import cz.cuni.mff.peckam.ais.detection.SummingDetector.ComputationStrategy;
+import cz.cuni.mff.peckam.ais.detection.VectorizationDetector;
 
 /**
  * The main window for detector comparisons.
@@ -180,6 +181,9 @@ public class DetectionFrame
         detectorPresentations
                 .add(new SummingDetectorPresentation(ComputationStrategy.QUANTILE_PEAK_DISTANCE_ESTIMATION));
         detectorPresentations.add(new SummingDetectorPresentation(ComputationStrategy.COMBINED_QUANTILE_PERIODOGRAM));
+        detectorPresentations.add(new VectorizationDetectorPresentation(
+                VectorizationDetector.ComputationStrategy.THINNING));
+
     }
 
     /**
@@ -223,7 +227,7 @@ public class DetectionFrame
         frmAisFetureDetectors.getContentPane().add(btnDetect, "12, 2");
 
         tabbedPane = new JTabbedPane(JTabbedPane.TOP);
-        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+        tabbedPane.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
         frmAisFetureDetectors.getContentPane().add(tabbedPane, "2, 4, 11, 1, fill, fill");
 
         for (DetectorPresentation<?> detector : detectorPresentations) {

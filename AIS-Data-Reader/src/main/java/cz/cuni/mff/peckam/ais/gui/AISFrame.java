@@ -102,6 +102,8 @@ public class AISFrame
     private ActionListener     updateIonogramsAction;
     /** Overlays. */
     private JComboBox<ProductOverlayType> overlaysComboBox;
+    /** Detection results. */
+    private JLabel                        resultLabel;
 
     /**
      * Launch the application.
@@ -231,6 +233,12 @@ public class AISFrame
 
         initialize();
 
+        resultLabel = new JLabel("");
+        frmAisDataVisualizer.getContentPane().add(resultLabel, "2, 6, 9, 1");
+
+        renderer = new ProductRenderer();
+        frmAisDataVisualizer.getContentPane().add(renderer, "2, 8, 9, 1, fill, fill");
+
         final String defaultFile = props.getProperty("defaultFile");
         lblFileInput.setPath(defaultFile);
 
@@ -309,8 +317,8 @@ public class AISFrame
                         FormFactory.PREF_COLSPEC, FormFactory.RELATED_GAP_COLSPEC, FormFactory.PREF_COLSPEC,
                         FormFactory.RELATED_GAP_COLSPEC, }, new RowSpec[] { FormFactory.RELATED_GAP_ROWSPEC,
                         FormFactory.DEFAULT_ROWSPEC, FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("fill:default"),
-                        FormFactory.RELATED_GAP_ROWSPEC, RowSpec.decode("default:grow"),
-                        FormFactory.RELATED_GAP_ROWSPEC, }));
+                        FormFactory.RELATED_GAP_ROWSPEC, FormFactory.DEFAULT_ROWSPEC, FormFactory.RELATED_GAP_ROWSPEC,
+                        RowSpec.decode("default:grow"), FormFactory.RELATED_GAP_ROWSPEC, }));
 
         JLabel lblFileInputLabel = new JLabel(".LBL file to parse");
         frmAisDataVisualizer.getContentPane().add(lblFileInputLabel, "2, 2, left, fill");
@@ -337,11 +345,8 @@ public class AISFrame
         overlaysComboBox.setModel(getOverlaysModel());
         frmAisDataVisualizer.getContentPane().add(overlaysComboBox, "10, 2, fill, default");
 
-        renderer = new ProductRenderer();
-        frmAisDataVisualizer.getContentPane().add(renderer, "2, 6, 9, 1, fill, fill");
-
         setMetadataLabel = new JLabel(" ");
-        frmAisDataVisualizer.getContentPane().add(setMetadataLabel, "2, 4, 5, 1, fill, top");
+        frmAisDataVisualizer.getContentPane().add(setMetadataLabel, "2, 4, 9, 1, fill, top");
     }
 
     /**
@@ -350,6 +355,8 @@ public class AISFrame
     private void updateSetMetadataLabel()
     {
         setMetadataLabel.setText(renderer.getProduct().getMetadataString());
+        resultLabel.setText(renderer.getProduct().getOverlay((ProductOverlayType) overlaysComboBox.getSelectedItem())
+                .getDescription());
     }
 
     /**
@@ -359,7 +366,8 @@ public class AISFrame
     {
         return new DefaultComboBoxModel<>(new ProductOverlayType[] { new ProductOverlayType.Manual(),
                 new ProductOverlayType.SumsPeriodogram(), new ProductOverlayType.SumsFitting(),
-                new ProductOverlayType.SumsQuantile(), new ProductOverlayType.SumsCombined() });
+                new ProductOverlayType.SumsQuantile(), new ProductOverlayType.SumsCombined(),
+                new ProductOverlayType.VectorizationThinning() });
     }
 
 }
