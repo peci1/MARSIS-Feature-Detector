@@ -8,7 +8,7 @@
   <dependencies>
   	<dependency>
   		<groupId>cz.cuni.mff.peckam.ais</groupId>
-  		<artifactId>ais-reader</artifactId>
+  		<artifactId>ais-base</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
   	<dependency>

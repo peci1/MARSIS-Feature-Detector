@@ -1,1 +1,7 @@
 target
+/features
+/max
+/mean
+/min
+/sd
+/trace
