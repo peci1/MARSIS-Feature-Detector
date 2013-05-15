@@ -45,7 +45,6 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
 {
 
     /** The data of the overlay. */
-    @SuppressWarnings("unused")
     private final FrameType                         resultData;
 
     /** The overlaid ionogram. */
@@ -142,6 +141,20 @@ public class AISResultOverlay implements ProductOverlay<Boolean, Float, Float, I
     public ProductOverlayType getType()
     {
         return type;
+    }
+
+    @Override
+    public String getDescription()
+    {
+        return "hPeriod = "
+                + resultData.getHperiod()
+                + " MHz, vPeriod = "
+                + resultData.getVperiod()
+                + " ms, "
+                + ((resultData.getIonospheretrace() == null || resultData.getIonospheretrace().getPoints().size() == 0) ? "no ionosphere trace, "
+                        : "ionosphere trace with " + resultData.getIonospheretrace().getPoints().size() + " points, ")
+                + ((resultData.getGroundtrace() == null || resultData.getGroundtrace().getPoints().size() == 0) ? "no ground trace"
+                        : "ground trace with " + resultData.getGroundtrace().getPoints().size() + " points");
     }
 
 }

@@ -11,12 +11,14 @@
     <name>Active Ionospheric Sounding feature detector</name>
 
     <modules>
+	    <module>ais-base</module>
         <module>detection-ui</module>
 	<module>detection-base</module>
 	<module>AIS-Result</module>
 	<module>AIS-Data-Reader</module>
 	<module>AIS-Result-Converter</module>
 	<module>detector-summing</module>
+	<module>detector-vectorization</module>
 	<module>statistics</module>
 	<module>result-comparator</module>
     </modules>

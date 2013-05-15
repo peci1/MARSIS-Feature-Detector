@@ -251,6 +251,7 @@ public class ProductRenderer extends JPanel
                 final BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 
                 final N[][] data = product.getData();
+
                 final int[] imageData = new int[w * h];
                 for (int x = 0; x < w; x++) {
                     for (int y = 0; y < h; y++) {

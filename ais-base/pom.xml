@@ -1,20 +1,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>cz.cuni.mff.peckam.ais</groupId>
-  <artifactId>result-converter</artifactId>
+  <artifactId>ais-base</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>AIS result file format converter</name>
-  <dependencies>
+  <name>AIS Base</name>
+    <dependencies>
   	<dependency>
-  		<groupId>cz.cuni.mff.peckam.ais</groupId>
-  		<artifactId>ais-base</artifactId>
-  		<version>0.0.1-SNAPSHOT</version>
+  		<groupId>joda-time</groupId>
+  		<artifactId>joda-time</artifactId>
+  		<version>2.1</version>
   	</dependency>
   	<dependency>
   		<groupId>cz.cuni.mff.peckam.ais</groupId>
   		<artifactId>result</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>
+  	<dependency>
+		<groupId>com.google.guava</groupId>
+		<artifactId>guava</artifactId>
+		<version>14.0.1</version>
+	</dependency>
   </dependencies>
   <build>
 	<plugins>

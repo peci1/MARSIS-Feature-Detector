@@ -214,4 +214,30 @@ public abstract class ProductOverlayType
             return "Row/column sums combined";
         }
     }
+
+    /**
+     * Vectorization w/ thinning.
+     * 
+     * @author Martin Pecka
+     */
+    public static class VectorizationThinning extends ProductOverlayType implements Automatic
+    {
+
+        @Override
+        public Orbit getResultImpl(File baseFolder, int orbit)
+        {
+            try {
+                return reader.readResult(new File(baseFolder, "TRACE_" + orbit + "_VEC_THINNING.XML"));
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        public String toString()
+        {
+            return "Vectorization-thinning";
+        }
+    }
 }

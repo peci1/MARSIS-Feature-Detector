@@ -303,6 +303,16 @@ public class Ionogram implements Product<Float, Float, Float>
     @Override
     public Point getDataPosition(Float row, Float column)
     {
+        return getOriginalDataPosition(row, column);
+    }
+
+    /**
+     * @param row Row
+     * @param column Col
+     * @return result.
+     */
+    public final Point getOriginalDataPosition(Float row, Float column)
+    {
         if (row < getMinRowValue() || row > getMaxRowValue())
             throw new IllegalArgumentException("Row value must lie within the interval <" + getMinRowValue() + "; "
                     + getMaxRowValue() + ">, but " + row + " was given.");
@@ -319,7 +329,6 @@ public class Ionogram implements Product<Float, Float, Float>
         Integer bestColumnKeyIndex = null;
         float bestColumnKeyDistance = Float.MAX_VALUE;
 
-        final Float[] columnKeys = getColumnKeys();
         for (int i = 0; i < columnKeys.length; i++) {
             final float columnKey = columnKeys[i];
             final float distance = Math.abs(columnKey - pColumn);
@@ -343,6 +352,18 @@ public class Ionogram implements Product<Float, Float, Float>
      * @return Coordinates in freq/time.
      */
     public PointType getFreqTimePosition(int x, int y)
+    {
+        return getOriginalFreqTimePosition(x, y);
+    }
+
+    /**
+     * Return the frequency/time delay coordinates for the given data coordinates.
+     * 
+     * @param x X coord.
+     * @param y Y coord.
+     * @return Coordinates in freq/time.
+     */
+    public final PointType getOriginalFreqTimePosition(int x, int y)
     {
         final PointType result = factory.createPointType();
         result.setX(columns[x].getFrequency());

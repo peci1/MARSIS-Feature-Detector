@@ -73,4 +73,9 @@ public interface ProductOverlay<DataType, ColType, RowType, ProductType extends 
      *         {@link #TYPE_DEFAULT}.
      */
     ProductOverlayType getType();
+
+    /**
+     * @return Short description of the values.
+     */
+    String getDescription();
 }
