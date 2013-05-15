@@ -31,9 +31,13 @@
 package cz.cuni.mff.peckam.ais.detection;
 
 import java.awt.Point;
+import java.util.LinkedList;
+import java.util.List;
 
+import cz.cuni.mff.peckam.ais.EvenlySampledIonogram;
 import cz.cuni.mff.peckam.ais.Ionogram;
 import cz.cuni.mff.peckam.ais.Product;
+import cz.cuni.mff.peckam.ais.result.PointType;
 
 /**
  * Ground echo.
@@ -86,6 +90,20 @@ public class GroundEcho extends GeneralCurve
             endFreq = (double) (iono.getMinColumnValue() + (getPoints()[getPoints().length - 1].x / (double) iono
                     .getWidth())
                     * (iono.getMaxColumnValue() - iono.getMinColumnValue()));
+
+            if (iono instanceof EvenlySampledIonogram) {
+                final List<Point> newPoints = new LinkedList<>();
+                int lastOrigColumn = -1;
+                for (Point point : getPoints()) {
+                    final PointType npt = iono.getFreqTimePosition(point.x, point.y);
+                    final Point origPoint = iono.getOriginalDataPosition(npt.getY(), npt.getX());
+                    if (origPoint.y == lastOrigColumn)
+                        continue;
+                    lastOrigColumn = origPoint.y;
+                    newPoints.add(point);
+                }
+                this.points = newPoints.toArray(new Point[0]);
+            }
         }
     }
 }

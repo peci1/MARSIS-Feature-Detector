@@ -40,7 +40,7 @@ import java.awt.Point;
 public abstract class GeneralCurve extends DetectedFeatureBase
 {
     /** The points this curve consists of. */
-    private final Point[] points;
+    protected Point[] points;
 
     /**
      * @param points The points this curve consists of.
