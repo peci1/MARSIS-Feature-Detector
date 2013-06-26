@@ -74,7 +74,6 @@ public class AISLBLProductReader
      * 
      * @throws IOException On file read error.
      */
-    @SuppressWarnings("resource")
     public Ionogram[] readFile(File lblFile) throws IOException
     {
         {
@@ -142,7 +141,10 @@ public class AISLBLProductReader
 
             Float altitude = null;
             if (altitudeReader != null) {
-                altitude = Float.parseFloat(altitudeReader.readLine());
+            	String altitudeString = altitudeReader.readLine();
+            	if (altitudeString != null) {
+            		altitude = Float.parseFloat(altitudeString);
+            	}
             }
             result[i] = new Ionogram(columns, orbit_number, i, altitude);
         }
