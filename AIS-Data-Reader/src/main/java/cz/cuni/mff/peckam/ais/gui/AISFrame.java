@@ -194,9 +194,10 @@ public class AISFrame
                     {
                         try {
                             ionograms = get();
-                            evenIonograms = new Ionogram[ionograms.length];
 
                             if (ionograms != null) {
+                            	evenIonograms = new Ionogram[ionograms.length];
+                            	
                                 final int oldIndex = positionInSeriesComboBox.getSelectedIndex();
 
                                 positionInSeriesComboBox
@@ -240,7 +241,8 @@ public class AISFrame
         frmAisDataVisualizer.getContentPane().add(renderer, "2, 8, 9, 1, fill, fill");
 
         final String defaultFile = props.getProperty("defaultFile");
-        lblFileInput.setPath(defaultFile);
+        if (defaultFile != null)
+        	lblFileInput.setPath(defaultFile);
 
         frmAisDataVisualizer.addWindowListener(new WindowAdapter() {
             @SuppressWarnings("synthetic-access")
